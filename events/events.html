@@ -1,0 +1,880 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EventSync - Your Career Companion</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+    <style>
+        body {
+            font-family: 'Poppins', sans-serif;
+            background: #e6f0fa;
+            margin: 0;
+            padding: 0;
+            color: #333;
+            overflow-x: hidden;
+        }
+        .container {
+            display: flex;
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 20px;
+            position: relative;
+            box-sizing: border-box;
+        }
+        /* User Card */
+        .user-card {
+            width: 220px;
+            background: #fff;
+            padding: 20px;
+            border-radius: 20px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+            position: fixed;
+            top: 20px;
+            max-height: calc(100vh - 80px);
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            padding-bottom: 20px;
+        }
+        .user-card .profile-pic {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            margin: 0 auto;
+            display: block;
+        }
+        .user-card h2 {
+            font-size: 1.3em;
+            margin: 15px 0 5px;
+            text-align: center;
+            font-weight: 600;
+            color: #2c3e50;
+        }
+        .user-card .details {
+            font-size: 0.85em;
+            text-align: center;
+            color: #7f8c8d;
+            margin-bottom: 25px;
+        }
+        .user-card .section {
+            margin: 25px 0;
+        }
+        .user-card .section h3 {
+            font-size: 1.1em;
+            margin-bottom: 10px;
+            font-weight: 600;
+            color: #3498db;
+        }
+        .user-card .section p {
+            margin: 5px 0;
+            font-size: 0.9em;
+            color: #7f8c8d;
+            line-height: 1.5;
+        }
+        .user-card .section .keywords {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+        .user-card .section .keywords span {
+            background: #e6f0fa;
+            padding: 5px 10px;
+            border-radius: 15px;
+            font-size: 0.85em;
+            color: #2c3e50;
+        }
+        .user-card .edit-button {
+            display: block;
+            width: 100%;
+            padding: 12px;
+            background: #3498db;
+            color: white;
+            border: none;
+            border-radius: 25px;
+            cursor: pointer;
+            font-size: 1em;
+            font-weight: 500;
+            transition: background 0.3s ease;
+            margin-top: 25px;
+        }
+        .user-card .edit-button:hover {
+            background: #2980b9;
+        }
+        /* Modal */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+        }
+        .modal-content {
+            background: #fff;
+            padding: 20px;
+            border-radius: 15px;
+            width: 400px;
+            max-height: 80vh;
+            overflow-y: auto;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+        }
+        .modal-content h3 {
+            margin-top: 0;
+            color: #3498db;
+        }
+        .modal-content .section {
+            margin: 20px 0;
+        }
+        .modal-content .keywords {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-bottom: 10px;
+        }
+        .modal-content .keywords span {
+            background: #e6f0fa;
+            padding: 5px 10px;
+            border-radius: 15px;
+            font-size: 0.85em;
+            color: #2c3e50;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+        .modal-content .keywords span i {
+            cursor: pointer;
+            color: #e74c3c;
+        }
+        .modal-content select {
+            width: 100%;
+            padding: 8px;
+            border-radius: 5px;
+            border: 1px solid #ccc;
+            margin-top: 10px;
+        }
+        .modal-content button {
+            padding: 10px 20px;
+            background: #3498db;
+            color: white;
+            border: none;
+            border-radius: 25px;
+            cursor: pointer;
+            margin-top: 10px;
+        }
+        .modal-content button:hover {
+            background: #2980b9;
+        }
+        /* Main Content */
+        .main-content {
+            flex: 1;
+            padding-left: 20px;
+            margin-top: 0;
+            margin-left: 260px;
+            box-sizing: border-box;
+        }
+        .tabs {
+            display: flex;
+            justify-content: center;
+            background: #fff;
+            padding: 10px 0;
+            border-radius: 15px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+            margin-bottom: 20px;
+            position: sticky; /* Make tabs static while scrolling */
+            top: 0;
+            z-index: 10;
+        }
+        .tabs div {
+            padding: 10px 20px;
+            cursor: pointer;
+            font-size: 1.1em;
+            color: #7f8c8d;
+            font-weight: 500;
+            transition: color 0.3s ease, transform 0.3s ease;
+            position: relative;
+            z-index: 1;
+        }
+        .tabs div.active {
+            color: #3498db;
+            transform: scale(1.1);
+        }
+        .tabs .highlight {
+            position: absolute;
+            top: 5px;
+            bottom: 5px;
+            background: rgba(52, 152, 219, 0.1); /* Super light blue background */
+            border-radius: 15px;
+            transition: all 0.3s ease;
+            z-index: 0;
+        }
+        .tab-content {
+            opacity: 0;
+            transform: translateY(10px);
+            transition: opacity 0.5s ease, transform 0.5s ease;
+        }
+        .tab-content.active {
+            opacity: 1;
+            transform: translateY(0);
+        }
+        .search-filter {
+            background: #fff;
+            padding: 15px;
+            border-radius: 15px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+            margin-bottom: 20px;
+            box-sizing: border-box;
+            position: sticky;
+            top: 60px; /* Adjust based on tabs height */
+            z-index: 9;
+            transition: transform 0.3s ease, opacity 0.3s ease; /* Smooth transition for hide/show */
+        }
+        .search-filter.hidden {
+            transform: translateY(-100%);
+            opacity: 0;
+        }
+        .search-bar {
+            width: 100%;
+            position: relative;
+            padding: 0 15px;
+            box-sizing: border-box;
+        }
+        .search-bar input {
+            padding: 10px 40px 10px 20px;
+            width: 100%;
+            box-sizing: border-box;
+            border: none;
+            border-radius: 25px;
+            background: #e6f0fa;
+            font-size: 0.95em;
+            outline: none;
+            margin-bottom: 10px;
+        }
+        .search-bar .search-icon {
+            position: absolute;
+            right: 25px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #7f8c8d;
+            font-size: 1.2em;
+        }
+        .filter {
+            width: 100%;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0 15px;
+            box-sizing: border-box;
+        }
+        .filter ul {
+            list-style: none;
+            display: flex;
+            justify-content: flex-start;
+            flex-wrap: wrap;
+            padding: 0;
+            margin: 0;
+            gap: 8px;
+            flex: 1; /* Allow the list to take available space */
+        }
+        .filter ul li {
+            padding: 6px 18px;
+            cursor: pointer;
+            border-radius: 20px;
+            background: #e6f0fa;
+            font-size: 0.85em;
+            font-weight: 500;
+            transition: background 0.3s ease;
+        }
+        .filter ul li.active {
+            background: #3498db;
+            color: white;
+        }
+        .filter .ai-button {
+            padding: 8px 20px;
+            background: #3498db;
+            color: white;
+            border: none;
+            border-radius: 25px;
+            cursor: pointer;
+            font-size: 0.9em;
+            font-weight: 500;
+            transition: background 0.3s ease;
+            flex-shrink: 0;
+            margin-left: 10px; /* Add spacing between filter list and button */
+        }
+        .filter .ai-button:hover {
+            background: #2980b9;
+        }
+        .filter .ai-button.toggled {
+            background: #7f8c8d;
+        }
+        .event-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 20px;
+        }
+        .event-card {
+            position: relative;
+            height: 300px;
+            border-radius: 15px;
+            overflow: hidden;
+            background-size: cover;
+            background-position: center;
+            background-color: #ecf0f1;
+            transition: transform 0.3s ease, opacity 0.3s ease;
+            opacity: 0;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
+        }
+        .event-card.visible {
+            opacity: 1;
+            animation: fadeIn 0.5s ease-in-out;
+        }
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        .event-card:hover {
+            transform: translateY(-5px);
+        }
+        .event-card .gradient-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(to bottom, rgba(0, 0, 0, 0.1), rgba(0, 0, 0, 0.5));
+        }
+        .event-card .overlay {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: #ffffff;
+            padding: 15px;
+            border-top: 1px solid rgba(255, 255, 255, 0.2);
+            box-sizing: border-box;
+        }
+        .event-card h3 {
+            margin: 0;
+            font-size: 1.1em;
+            color: #2c3e50;
+            font-weight: 600;
+        }
+        .event-card p {
+            margin: 5px 0;
+            color: #7f8c8d;
+            font-size: 0.85em;
+        }
+        .event-card .keywords {
+            font-size: 0.8em;
+            color: #3498db;
+            margin-top: 10px;
+            display: flex;
+            flex-direction: row;
+            gap: 8px;
+            max-width: 100%;
+            overflow-x: auto;
+            white-space: nowrap;
+        }
+        .event-card .keywords span {
+            background: #e6f0fa;
+            padding: 5px 10px;
+            border-radius: 15px;
+            font-size: 0.85em;
+            color: #2c3e50;
+            display: inline-block;
+        }
+        .event-card .know-more {
+            display: block;
+            width: calc(100% - 30px);
+            margin: 10px auto 0;
+            padding: 10px;
+            background: #3498db;
+            color: white;
+            border-radius: 20px;
+            font-size: 0.9em;
+            text-decoration: none;
+            text-align: center;
+            transition: background 0.3s ease;
+            box-sizing: border-box;
+        }
+        .event-card .know-more:hover {
+            background: #2980b9;
+        }
+        footer {
+            text-align: center;
+            margin-top: 40px;
+            color: #7f8c8d;
+            font-size: 0.9em;
+        }
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .container {
+                flex-direction: column;
+            }
+            .user-card {
+                width: 100%;
+                max-width: 280px;
+                margin: 0 auto 20px;
+                position: relative;
+                height: auto;
+            }
+            .main-content {
+                padding-left: 0;
+                margin-left: 0;
+            }
+            .search-bar, .filter {
+                max-width: 100%;
+            }
+            .search-bar input {
+                width: 100%;
+            }
+            .filter {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+            .filter .ai-button {
+                margin-top: 10px;
+                margin-left: 0;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- User Card -->
+        <div class="user-card">
+            <img src="https://amreckenya.org/wp-content/uploads/2020/11/403022_business-man_male_user_avatar_profile_icon-1.png" alt="Profile Picture" class="profile-pic">
+            <h2>John Doe</h2>
+            <div class="details">Computer Science, Semester 5</div>
+            
+            <div class="section">
+                <h3>Skills</h3>
+                <div class="keywords" id="skillsList">
+                    <span>HTML</span>
+                    <span>CSS</span>
+                </div>
+            </div>
+            
+            <div class="section">
+                <h3>Interests</h3>
+                <div class="keywords" id="interestsList">
+                    <span>Technology</span>
+                    <span>Software</span>
+                </div>
+            </div>
+            
+            <div class="section">
+                <h3>Aspire to Be</h3>
+                <div class="keywords" id="aspireList">
+                    <span>Web Developer</span>
+                </div>
+            </div>
+            
+            <button class="edit-button" onclick="openEditModal()" aria-label="Edit Profile">Edit Profile</button>
+        </div>
+
+        <!-- Edit Profile Modal -->
+        <div class="modal" id="editModal">
+            <div class="modal-content">
+                <h3>Edit Profile</h3>
+                
+                <div class="section">
+                    <h4>Skills</h4>
+                    <div class="keywords" id="modalSkillsList">
+                        <span>HTML<i class="fas fa-times" onclick="removeItem('skills', 'HTML')"></i></span>
+                        <span>CSS<i class="fas fa-times" onclick="removeItem('skills', 'CSS')"></i></span>
+                    </div>
+                    <select id="addSkill" onchange="addItem('skills', this)">
+                        <option value="">Add a skill...</option>
+                        <option value="JavaScript">JavaScript</option>
+                        <option value="Python">Python</option>
+                        <option value="UI/UX Design">UI/UX Design</option>
+                        <option value="Data Science">Data Science</option>
+                    </select>
+                </div>
+                
+                <div class="section">
+                    <h4>Interests</h4>
+                    <div class="keywords" id="modalInterestsList">
+                        <span>Technology<i class="fas fa-times" onclick="removeItem('interests', 'Technology')"></i></span>
+                        <span>Software<i class="fas fa-times" onclick="removeItem('interests', 'Software')"></i></span>
+                    </div>
+                    <select id="addInterest" onchange="addItem('interests', this)">
+                        <option value="">Add an interest...</option>
+                        <option value="AI">AI</option>
+                        <option value="Gaming">Gaming</option>
+                        <option value="Design">Design</option>
+                        <option value="Blockchain">Blockchain</option>
+                    </select>
+                </div>
+                
+                <div class="section">
+                    <h4>Aspire to Be</h4>
+                    <div class="keywords" id="modalAspireList">
+                        <span>Web Developer<i class="fas fa-times" onclick="removeItem('aspire', 'Web Developer')"></i></span>
+                    </div>
+                    <select id="addAspire" onchange="addItem('aspire', this)">
+                        <option value="">Add an aspiration...</option>
+                        <option value="Data Scientist">Data Scientist</option>
+                        <option value="UI/UX Designer">UI/UX Designer</option>
+                        <option value="Software Engineer">Software Engineer</option>
+                        <option value="Product Manager">Product Manager</option>
+                    </select>
+                </div>
+                
+                <button onclick="saveProfile()">Confirm</button>
+            </div>
+        </div>
+
+        <!-- Main Content -->
+        <div class="main-content">
+            <!-- Tabs -->
+            <div class="tabs" id="tabs">
+                <div class="active" onclick="switchTab('events')" tabindex="0" aria-label="Events Tab">Events</div>
+                <div onclick="switchTab('internships')" tabindex="0" aria-label="Internships Tab">Internships</div>
+                <div onclick="switchTab('projects')" tabindex="0" aria-label="Projects Tab">Projects</div>
+                <div class="highlight"></div>
+            </div>
+
+            <!-- Tab Content -->
+            <div id="eventsTab" class="tab-content active">
+                <!-- Search and Filter -->
+                <div class="search-filter" id="searchFilter">
+                    <div class="search-bar">
+                        <input type="text" id="searchInput" placeholder="Search events..." onkeyup="debouncedFilterEvents()" aria-label="Search Events">
+                        <i class="fas fa-search search-icon"></i>
+                    </div>
+                    <div class="filter">
+                        <ul id="categoryFilter">
+                            <li data-category="all" class="active" tabindex="0" aria-label="All Categories">All</li>
+                            <li data-category="data science" tabindex="0" aria-label="Data Science Category">Data Science</li>
+                            <li data-category="web development" tabindex="0" aria-label="Web Development Category">Web Development</li>
+                            <li data-category="hackathons" tabindex="0" aria-label="Hackathons Category">Hackathons</li>
+                            <li data-category="workshops" tabindex="0" aria-label="Workshops Category">Workshops</li>
+                        </ul>
+                        <button class="ai-button" id="aiButton" onclick="toggleAIPersonalization()" aria-label="Toggle AI Personalization">AI Personalize</button>
+                    </div>
+                </div>
+
+                <!-- Event Grid -->
+                <div class="event-grid" id="eventGrid">
+                    <!-- Event Card 1 -->
+                    <div class="event-card visible" data-category="data science" style="background-image: url('https://png.pngtree.com/background/20220714/original/pngtree-vector-technology-circle-and-technical-background-picture-image_1613793.jpg')">
+                        <div class="gradient-overlay"></div>
+                        <div class="overlay">
+                            <h3>National Seminar</h3>
+                            <p>16 Dec, 2019</p>
+                            <div class="keywords">
+                                <span>Machine Learning</span>
+                                <span>Python</span>
+                                <span>Data Science</span>
+                            </div>
+                            <a href="#" class="know-more">Know More</a>
+                        </div>
+                    </div>
+
+                    <!-- Event Card 2 -->
+                    <div class="event-card visible" data-category="hackathons" style="background-image: url('https://png.pngtree.com/background/20220714/original/pngtree-vector-technology-circle-and-technical-background-picture-image_1613793.jpg')">
+                        <div class="gradient-overlay"></div>
+                        <div class="overlay">
+                            <h3>National Seminar</h3>
+                            <p>16 Dec, 2019</p>
+                            <div class="keywords">
+                                <span>HTML</span>
+                                <span>CSS</span>
+                                <span>JavaScript</span>
+                                <span>Web Development</span>
+                            </div>
+                            <a href="#" class="know-more">Know More</a>
+                        </div>
+                    </div>
+
+                    <!-- Event Card 3 -->
+                    <div class="event-card visible" data-category="workshops" style="background-image: url('https://png.pngtree.com/background/20220714/original/pngtree-vector-technology-circle-and-technical-background-picture-image_1613793.jpg')">
+                        <div class="gradient-overlay"></div>
+                        <div class="overlay">
+                            <h3>National Seminar</h3>
+                            <p>16 Dec, 2019</p>
+                            <div class="keywords">
+                                <span>HTML</span>
+                                <span>CSS</span>
+                                <span>Bootstrap</span>
+                                <span>Web Development</span>
+                            </div>
+                            <a href="#" class="know-more">Know More</a>
+                        </div>
+                    </div>
+
+                    <!-- Event Card 4 -->
+                    <div class="event-card visible" data-category="workshops" style="background-image: url('https://png.pngtree.com/background/20220714/original/pngtree-vector-technology-circle-and-technical-background-picture-image_1613793.jpg')">
+                        <div class="gradient-overlay"></div>
+                        <div class="overlay">
+                            <h3>National Seminar</h3>
+                            <p>16 Dec, 2019</p>
+                            <div class="keywords">
+                                <span>JavaScript</span>
+                                <span>Web Development</span>
+                            </div>
+                            <a href="#" class="know-more">Know More</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div id="internshipsTab" class="tab-content">
+                <p>Coming soon...</p>
+            </div>
+            <div id="projectsTab" class="tab-content">
+                <p>Coming soon...</p>
+            </div>
+        </div>
+    </div>
+    <footer>© 2025 EventSync - Powered by xAI</footer>
+
+    <script>
+        // User data
+        let user = {
+            skills: ["HTML", "CSS"],
+            interests: ["Technology", "Software"],
+            aspire: ["Web Developer"],
+            careerGoal: "Web Developer"
+        };
+
+        let aiToggled = false;
+        let eventGridContent = document.getElementById("eventGrid").innerHTML;
+
+        // Tab highlight animation
+        function updateTabHighlight() {
+            const activeTab = document.querySelector(".tabs div.active");
+            const highlight = document.querySelector(".tabs .highlight");
+            highlight.style.width = `${activeTab.offsetWidth}px`;
+            highlight.style.left = `${activeTab.offsetLeft}px`;
+        }
+
+        window.addEventListener("load", updateTabHighlight);
+        window.addEventListener("resize", updateTabHighlight);
+
+        // Search functionality with Debouncing
+        function filterEvents() {
+            const searchValue = document.getElementById("searchInput").value.toLowerCase();
+            const eventCards = document.querySelectorAll(".event-card");
+
+            eventCards.forEach(card => {
+                const title = card.querySelector("h3").textContent.toLowerCase();
+                const description = card.querySelector("p:not(.keywords)").textContent.toLowerCase();
+                const keywords = card.querySelector(".keywords").textContent.toLowerCase();
+
+                if (title.includes(searchValue) || description.includes(searchValue) || keywords.includes(searchValue)) {
+                    card.style.display = "block";
+                    card.classList.add("visible");
+                } else {
+                    card.style.display = "none";
+                    card.classList.remove("visible");
+                }
+            });
+        }
+
+        // Debounce function
+        function debounce(func, wait) {
+            let timeout;
+            return function executedFunction(...args) {
+                const later = () => {
+                    clearTimeout(timeout);
+                    func(...args);
+                };
+                clearTimeout(timeout);
+                timeout = setTimeout(later, wait);
+            };
+        }
+
+        const debouncedFilterEvents = debounce(filterEvents, 300);
+
+        // Category filter functionality
+        document.getElementById("categoryFilter").addEventListener("click", function(e) {
+            if (e.target.tagName === "LI") {
+                const category = e.target.getAttribute("data-category");
+                const eventCards = document.querySelectorAll(".event-card");
+
+                document.querySelectorAll("#categoryFilter li").forEach(li => li.classList.remove("active"));
+                e.target.classList.add("active");
+
+                eventCards.forEach(card => {
+                    const cardCategory = card.getAttribute("data-category");
+                    if (category === "all" || cardCategory === category) {
+                        card.style.display = "block";
+                        card.classList.add("visible");
+                    } else {
+                        card.style.display = "none";
+                        card.classList.remove("visible");
+                    }
+                });
+
+                if (aiToggled) {
+                    untoggleAI();
+                }
+            }
+        });
+
+        // Keyboard Navigation for Filters
+        document.querySelectorAll("#categoryFilter li").forEach(item => {
+            item.addEventListener("keydown", (e) => {
+                if (e.key === "Enter" || e.key === " ") {
+                    item.click();
+                }
+            });
+        });
+
+        // Tab navigation with animation
+        function switchTab(tab) {
+            document.querySelectorAll(".tabs div").forEach(tab => tab.classList.remove("active"));
+            document.querySelector(`.tabs div[onclick="switchTab('${tab}')"]`).classList.add("active");
+            updateTabHighlight();
+
+            document.querySelectorAll(".tab-content").forEach(content => content.classList.remove("active"));
+            const tabContent = document.getElementById(`${tab}Tab`);
+            tabContent.classList.add("active");
+
+            if (tab === "events") {
+                document.getElementById("eventGrid").innerHTML = eventGridContent;
+                document.querySelectorAll(".event-card").forEach(card => {
+                    card.classList.add("visible");
+                });
+            }
+        }
+
+        // Keyboard Navigation for Tabs
+        document.querySelectorAll(".tabs div").forEach(item => {
+            item.addEventListener("keydown", (e) => {
+                if (e.key === "Enter" || e.key === " ") {
+                    item.click();
+                }
+            });
+        });
+
+        // AI Personalization
+        function personalizeSuggestions() {
+            const eventCards = document.querySelectorAll(".event-card");
+            eventCards.forEach(card => {
+                const keywords = card.querySelector(".keywords").textContent.toLowerCase();
+                const skillMatch = user.skills.some(skill => keywords.includes(skill.toLowerCase()));
+                const goalMatch = keywords.includes(user.careerGoal.toLowerCase());
+
+                if (skillMatch || goalMatch) {
+                    if (!user.skills.includes("JavaScript") && keywords.includes("javascript")) {
+                        card.style.border = "2px solid #3498db";
+                    } else if (!user.skills.includes("Bootstrap") && keywords.includes("bootstrap")) {
+                        card.style.border = "2px solid #3498db";
+                    }
+                    card.style.opacity = "1";
+                } else {
+                    card.style.opacity = "0.5";
+                }
+            });
+        }
+
+        // Toggle AI Personalization
+        function toggleAIPersonalization() {
+            const aiButton = document.getElementById("aiButton");
+            if (!aiToggled) {
+                personalizeSuggestions();
+                aiButton.textContent = "Untoggle AI";
+                aiButton.classList.add("toggled");
+                aiToggled = true;
+            } else {
+                untoggleAI();
+            }
+        }
+
+        function untoggleAI() {
+            const eventCards = document.querySelectorAll(".event-card");
+            eventCards.forEach(card => {
+                card.style.opacity = "1";
+                card.style.border = "none";
+            });
+            const aiButton = document.getElementById("aiButton");
+            aiButton.textContent = "AI Personalize";
+            aiButton.classList.remove("toggled");
+            aiToggled = false;
+        }
+
+        // Edit Profile Modal
+        function openEditModal() {
+            const modal = document.getElementById("editModal");
+            modal.style.display = "flex";
+        }
+
+        function closeModal() {
+            const modal = document.getElementById("editModal");
+            modal.style.display = "none";
+        }
+
+        function addItem(type, selectElement) {
+            const value = selectElement.value;
+            if (!value) return;
+
+            if (type === "aspire" && user[type].length >= 1) {
+                alert("You can only have one aspiration.");
+                return;
+            }
+
+            if (!user[type].includes(value)) {
+                user[type].push(value);
+                updateModalList(type);
+            }
+            selectElement.value = "";
+        }
+
+        function removeItem(type, item) {
+            user[type] = user[type].filter(i => i !== item);
+            updateModalList(type);
+        }
+
+        function updateModalList(type) {
+            const listElement = document.getElementById(`modal${type.charAt(0).toUpperCase() + type.slice(1)}List`);
+            listElement.innerHTML = user[type].map(item => `
+                <span>${item}<i class="fas fa-times" onclick="removeItem('${type}', '${item}')"></i></span>
+            `).join("");
+        }
+
+        function saveProfile() {
+            document.getElementById("skillsList").innerHTML = user.skills.map(skill => `<span>${skill}</span>`).join("");
+            document.getElementById("interestsList").innerHTML = user.interests.map(interest => `<span>${interest}</span>`).join("");
+            document.getElementById("aspireList").innerHTML = user.aspire.map(aspire => `<span>${aspire}</span>`).join("");
+            user.careerGoal = user.aspire[0] || "Web Developer";
+            closeModal();
+        }
+
+        document.getElementById("editModal").addEventListener("click", function(e) {
+            if (e.target === this) {
+                closeModal();
+            }
+        });
+
+        // Scroll behavior for search filter
+        let lastScrollTop = 0;
+        window.addEventListener("scroll", function() {
+            const searchFilter = document.getElementById("searchFilter");
+            const currentScrollTop = window.pageYOffset || document.documentElement.scrollTop;
+
+            if (currentScrollTop > lastScrollTop) {
+                // Scrolling down
+                searchFilter.classList.add("hidden");
+            } else {
+                // Scrolling up
+                searchFilter.classList.remove("hidden");
+            }
+            lastScrollTop = currentScrollTop <= 0 ? 0 : currentScrollTop;
+        });
+    </script>
+</body>
+</html>
