@@ -1,0 +1,677 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CUSAT Marketplace</title>
+    <link rel="stylesheet" href="styles.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.1.1/js/all.min.js"></script>
+</head>
+<body>
+    <!-- Header Section -->
+    <header>
+        <div class="container">
+            <nav>
+                <div class="logo">CUSAT <span>Marketplace</span></div>
+                <div class="nav-links">
+                    <a href="#" onclick="showHome()">Home</a>
+                    <a href="#" onclick="showCategories()">Categories</a>
+                    <a href="#" onclick="showMessages()">Messages</a>
+                    <a href="#" onclick="showProfile()">My Profile</a>
+                </div>
+                <div class="profile-icon" onclick="showProfile()">S</div>
+            </nav>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <div class="container">
+        <!-- Home Panel -->
+        <div id="home-panel" class="tab-panel active">
+            <!-- Hero Section -->
+            <section class="hero">
+                <h1>Campus Marketplace</h1>
+                <p>Buy and sell items with fellow CUSAT students. Find great deals on textbooks, electronics, furniture, and more.</p>
+                <div class="search-bar">
+                    <input type="text" placeholder="Search for items...">
+                    <i class="fas fa-search"></i>
+                </div>
+            </section>
+
+            <!-- Categories Section -->
+            <section class="categories">
+                <h2 class="section-title">Popular Categories</h2>
+                <div class="category-grid">
+                    <div class="category-card" onclick="showCategories('textbooks')">
+                        <div class="category-icon">
+                            <i class="fas fa-book"></i>
+                        </div>
+                        <h3 class="category-name">Textbooks</h3>
+                    </div>
+                    <div class="category-card" onclick="showCategories('electronics')">
+                        <div class="category-icon">
+                            <i class="fas fa-laptop"></i>
+                        </div>
+                        <h3 class="category-name">Electronics</h3>
+                    </div>
+                    <div class="category-card" onclick="showCategories('clothing')">
+                        <div class="category-icon">
+                            <i class="fas fa-tshirt"></i>
+                        </div>
+                        <h3 class="category-name">Clothing</h3>
+                    </div>
+                    <div class="category-card" onclick="showCategories('furniture')">
+                        <div class="category-icon">
+                            <i class="fas fa-couch"></i>
+                        </div>
+                        <h3 class="category-name">Furniture</h3>
+                    </div>
+                    <div class="category-card" onclick="showCategories('vehicles')">
+                        <div class="category-icon">
+                            <i class="fas fa-bicycle"></i>
+                        </div>
+                        <h3 class="category-name">Vehicles</h3>
+                    </div>
+                    <div class="category-card" onclick="showCategories('other')">
+                        <div class="category-icon">
+                            <i class="fas fa-archive"></i>
+                        </div>
+                        <h3 class="category-name">Other</h3>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Products Section -->
+            <section class="products">
+                <h2 class="section-title">Featured Items</h2>
+                <div class="product-grid">
+                    <div class="product-card" onclick="showProductDetail()">
+                        <div class="product-image">
+                            <img src="/api/placeholder/400/320" alt="Macbook Pro 2023">
+                        </div>
+                        <div class="product-details">
+                            <h3 class="product-title">MacBook Pro 2023</h3>
+                            <p class="product-price">₹85,000</p>
+                            <p class="product-description">M2 chip, 16GB RAM, 512GB SSD. Excellent condition, only 6 months old.</p>
+                            <div class="product-meta">
+                                <span class="product-seller">Arun Kumar • S8 CSE</span>
+                                <span class="product-timestamp">Posted 2 days ago</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="product-card" onclick="showProductDetail()">
+                        <div class="product-image">
+                            <img src="/api/placeholder/400/320" alt="Engineering Mathematics Textbook">
+                        </div>
+                        <div class="product-details">
+                            <h3 class="product-title">Engineering Mathematics</h3>
+                            <p class="product-price">₹350</p>
+                            <p class="product-description">Complete set of S3 and S4 engineering mathematics textbooks. Minimal highlighting.</p>
+                            <div class="product-meta">
+                                <span class="product-seller">Priya S • S6 ECE</span>
+                                <span class="product-timestamp">Posted yesterday</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="product-card" onclick="showProductDetail()">
+                        <div class="product-image">
+                            <img src="/api/placeholder/400/320" alt="Hostel Room Furniture">
+                        </div>
+                        <div class="product-details">
+                            <h3 class="product-title">Study Table & Chair</h3>
+                            <p class="product-price">₹2,500</p>
+                            <p class="product-description">Wooden study table with ergonomic chair. Perfect for hostel rooms.</p>
+                            <div class="product-meta">
+                                <span class="product-seller">Mohammed A • S8 ME</span>
+                                <span class="product-timestamp">Posted 3 days ago</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="product-card" onclick="showProductDetail()">
+                        <div class="product-image">
+                            <img src="/api/placeholder/400/320" alt="Scientific Calculator">
+                        </div>
+                        <div class="product-details">
+                            <h3 class="product-title">Casio FX-991ES Plus</h3>
+                            <p class="product-price">₹750</p>
+                            <p class="product-description">Scientific calculator, perfect condition with pouch and manual.</p>
+                            <div class="product-meta">
+                                <span class="product-seller">Anjali R • S4 EEE</span>
+                                <span class="product-timestamp">Posted today</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <button class="view-more-btn">View More Items</button>
+            </section>
+        </div>
+
+        <!-- Categories Panel -->
+        <div id="categories-panel" class="tab-panel">
+            <div class="panel-header">
+                <h2>Browse Categories</h2>
+                <div class="filter-sort">
+                    <select id="sort-options">
+                        <option value="recent">Most Recent</option>
+                        <option value="price-low">Price: Low to High</option>
+                        <option value="price-high">Price: High to Low</option>
+                    </select>
+                </div>
+            </div>
+            
+            <div class="categories-tabs">
+                <button class="tab-btn active" onclick="filterCategory('all')">All</button>
+                <button class="tab-btn" onclick="filterCategory('textbooks')">Textbooks</button>
+                <button class="tab-btn" onclick="filterCategory('electronics')">Electronics</button>
+                <button class="tab-btn" onclick="filterCategory('clothing')">Clothing</button>
+                <button class="tab-btn" onclick="filterCategory('furniture')">Furniture</button>
+                <button class="tab-btn" onclick="filterCategory('vehicles')">Vehicles</button>
+                <button class="tab-btn" onclick="filterCategory('other')">Other</button>
+            </div>
+            
+            <div class="product-grid">
+                <!-- Products will be loaded dynamically based on category selection -->
+                <div class="product-card" data-category="electronics" onclick="showProductDetail()">
+                    <div class="product-image">
+                        <img src="/api/placeholder/400/320" alt="Mechanical Keyboard">
+                    </div>
+                    <div class="product-details">
+                        <h3 class="product-title">Mechanical Keyboard</h3>
+                        <p class="product-price">₹2,800</p>
+                        <p class="product-description">Red switches, RGB backlight. Great for programming projects.</p>
+                        <div class="product-meta">
+                            <span class="product-seller">Vishnu K • S6 CSE</span>
+                            <span class="product-timestamp">Posted 5 days ago</span>
+                        </div>
+                    </div>
+                </div>
+                <!-- More products would be listed here -->
+            </div>
+        </div>
+
+        <!-- Messages Panel -->
+        <div id="messages-panel" class="tab-panel">
+            <div class="panel-header">
+                <h2>Messages</h2>
+            </div>
+            
+            <div class="messages-container">
+                <div class="conversations-list">
+                    <div class="conversation active">
+                        <div class="conversation-avatar">A</div>
+                        <div class="conversation-preview">
+                            <h3>Arun Kumar</h3>
+                            <p>Is the MacBook still available?</p>
+                        </div>
+                        <div class="conversation-time">2:30 PM</div>
+                    </div>
+                    <div class="conversation">
+                        <div class="conversation-avatar">P</div>
+                        <div class="conversation-preview">
+                            <h3>Priya S</h3>
+                            <p>Can we meet tomorrow?</p>
+                        </div>
+                        <div class="conversation-time">Yesterday</div>
+                    </div>
+                    <div class="conversation">
+                        <div class="conversation-avatar">M</div>
+                        <div class="conversation-preview">
+                            <h3>Mohammed A</h3>
+                            <p>I'll bring the table to your hostel</p>
+                        </div>
+                        <div class="conversation-time">3 days ago</div>
+                    </div>
+                </div>
+                
+                <div class="message-view">
+                    <div class="message-header">
+                        <div class="message-user">
+                            <div class="user-avatar">A</div>
+                            <h3>Arun Kumar</h3>
+                        </div>
+                        <div class="product-reference">
+                            <img src="/api/placeholder/60/60" alt="MacBook Pro">
+                            <span>MacBook Pro 2023</span>
+                        </div>
+                    </div>
+                    
+                    <div class="messages-thread">
+                        <div class="message incoming">
+                            <p>Hi, is the MacBook still available?</p>
+                            <span class="message-time">2:30 PM</span>
+                        </div>
+                        <div class="message outgoing">
+                            <p>Yes, it's still available. Are you interested?</p>
+                            <span class="message-time">2:35 PM</span>
+                        </div>
+                        <div class="message incoming">
+                            <p>Yes! Can I see it in person? When are you free?</p>
+                            <span class="message-time">2:38 PM</span>
+                        </div>
+                    </div>
+                    
+                    <div class="message-input">
+                        <input type="text" placeholder="Type a message...">
+                        <button><i class="fas fa-paper-plane"></i></button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Profile Panel -->
+        <div id="profile-panel" class="tab-panel">
+            <div class="profile-header">
+                <div class="profile-info">
+                    <div class="profile-avatar">S</div>
+                    <div class="profile-details">
+                        <h2>Sneha Menon</h2>
+                        <p>S6 Computer Science Engineering</p>
+                        <p>sneha.menon@cs.cusat.ac.in</p>
+                        <button class="edit-profile-btn"><i class="fas fa-edit"></i> Edit Profile</button>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="profile-actions">
+                <button class="tab-btn active" onclick="showProfileTab('my-listings')">My Listings</button>
+                <button class="tab-btn" onclick="showProfileTab('saved-items')">Saved Items</button>
+                <button class="tab-btn" onclick="showProfileTab('purchase-history')">Purchase History</button>
+                <button class="new-listing-btn"><i class="fas fa-plus"></i> New Listing</button>
+            </div>
+            
+            <div id="my-listings-tab" class="profile-tab active">
+                <div class="product-grid">
+                    <div class="product-card">
+                        <div class="product-image">
+                            <img src="/api/placeholder/400/320" alt="iPad Pro">
+                        </div>
+                        <div class="product-details">
+                            <h3 class="product-title">iPad Pro 11" (2022)</h3>
+                            <p class="product-price">₹55,000</p>
+                            <p class="product-description">Apple Pencil 2 included. Perfect for digital notes.</p>
+                            <div class="product-listing-actions">
+                                <button class="edit-btn"><i class="fas fa-edit"></i> Edit</button>
+                                <button class="delete-btn"><i class="fas fa-trash"></i> Delete</button>
+                                <button class="mark-sold-btn"><i class="fas fa-check"></i> Mark as Sold</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div id="saved-items-tab" class="profile-tab">
+                <div class="product-grid">
+                    <div class="product-card" onclick="showProductDetail()">
+                        <div class="product-image">
+                            <img src="/api/placeholder/400/320" alt="Study Table & Chair">
+                        </div>
+                        <div class="product-details">
+                            <h3 class="product-title">Study Table & Chair</h3>
+                            <p class="product-price">₹2,500</p>
+                            <p class="product-description">Wooden study table with ergonomic chair. Perfect for hostel rooms.</p>
+                            <div class="product-meta">
+                                <span class="product-seller">Mohammed A • S8 ME</span>
+                                <span class="product-timestamp">Posted 3 days ago</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div id="purchase-history-tab" class="profile-tab">
+                <div class="purchase-list">
+                    <div class="purchase-item">
+                        <img src="/api/placeholder/100/100" alt="Engineering Mathematics">
+                        <div class="purchase-details">
+                            <h3>Engineering Mathematics</h3>
+                            <p>₹350 • Purchased from Priya S on March 10, 2025</p>
+                        </div>
+                        <button class="contact-seller-btn">Contact Seller</button>
+                    </div>
+                    <div class="purchase-item">
+                        <img src="/api/placeholder/100/100" alt="Scientific Calculator">
+                        <div class="purchase-details">
+                            <h3>Casio FX-991ES Plus</h3>
+                            <p>₹750 • Purchased from Anjali R on February 15, 2025</p>
+                        </div>
+                        <button class="contact-seller-btn">Contact Seller</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Product Detail Modal -->
+    <div id="product-detail-modal" class="modal">
+        <div class="modal-content">
+            <span class="close-modal" onclick="closeProductDetail()">&times;</span>
+            <div class="product-detail-container">
+                <div class="product-gallery">
+                    <img src="/api/placeholder/600/500" alt="MacBook Pro 2023" class="main-image">
+                    <div class="thumbnail-gallery">
+                        <img src="/api/placeholder/100/100" alt="Thumbnail 1" class="thumbnail active">
+                        <img src="/api/placeholder/100/100" alt="Thumbnail 2" class="thumbnail">
+                        <img src="/api/placeholder/100/100" alt="Thumbnail 3" class="thumbnail">
+                    </div>
+                </div>
+                <div class="product-info">
+                    <h2 class="product-title">MacBook Pro 2023</h2>
+                    <p class="product-price">₹85,000</p>
+                    <div class="seller-info">
+                        <div class="seller-avatar">A</div>
+                        <div class="seller-details">
+                            <h3>Arun Kumar</h3>
+                            <p>S8 Computer Science Engineering</p>
+                        </div>
+                    </div>
+                    <div class="product-description">
+                        <h3>Description</h3>
+                        <p>M2 chip, 16GB RAM, 512GB SSD. Excellent condition, only 6 months old. No scratches or dents. Original charger included. Selling because I'm upgrading to a newer model.</p>
+                    </div>
+                    <div class="product-details-list">
+                        <div class="detail-item">
+                            <span class="detail-label">Condition:</span>
+                            <span class="detail-value">Excellent</span>
+                        </div>
+                        <div class="detail-item">
+                            <span class="detail-label">Category:</span>
+                            <span class="detail-value">Electronics</span>
+                        </div>
+                        <div class="detail-item">
+                            <span class="detail-label">Location:</span>
+                            <span class="detail-value">CUSAT Men's Hostel</span>
+                        </div>
+                        <div class="detail-item">
+                            <span class="detail-label">Posted:</span>
+                            <span class="detail-value">2 days ago</span>
+                        </div>
+                    </div>
+                    <div class="product-actions">
+                        <button class="contact-btn"><i class="fas fa-comment"></i> Contact Seller</button>
+                        <button class="save-btn"><i class="far fa-bookmark"></i> Save Item</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- New Listing Modal -->
+    <div id="new-listing-modal" class="modal">
+        <div class="modal-content">
+            <span class="close-modal" onclick="closeNewListing()">&times;</span>
+            <h2>Create New Listing</h2>
+            <form id="new-listing-form">
+                <div class="form-group">
+                    <label for="item-title">Title</label>
+                    <input type="text" id="item-title" placeholder="What are you selling?" required>
+                </div>
+                <div class="form-group">
+                    <label for="item-category">Category</label>
+                    <select id="item-category" required>
+                        <option value="">Select category</option>
+                        <option value="textbooks">Textbooks</option>
+                        <option value="electronics">Electronics</option>
+                        <option value="clothing">Clothing</option>
+                        <option value="furniture">Furniture</option>
+                        <option value="vehicles">Vehicles</option>
+                        <option value="other">Other</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="item-price">Price (₹)</label>
+                    <input type="number" id="item-price" placeholder="0" min="0" required>
+                </div>
+                <div class="form-group">
+                    <label for="item-condition">Condition</label>
+                    <select id="item-condition" required>
+                        <option value="">Select condition</option>
+                        <option value="new">New</option>
+                        <option value="like-new">Like New</option>
+                        <option value="good">Good</option>
+                        <option value="fair">Fair</option>
+                        <option value="poor">Poor</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="item-description">Description</label>
+                    <textarea id="item-description" rows="4" placeholder="Describe your item in detail..." required></textarea>
+                </div>
+                <div class="form-group">
+                    <label for="item-location">Pickup Location</label>
+                    <input type="text" id="item-location" placeholder="Where can the buyer collect this item?" required>
+                </div>
+                <div class="form-group">
+                    <label for="item-images">Upload Images</label>
+                    <div class="image-upload-container">
+                        <div class="upload-box">
+                            <i class="fas fa-plus"></i>
+                            <span>Add Photo</span>
+                            <input type="file" id="item-images" accept="image/*" multiple hidden>
+                        </div>
+                        <div class="upload-preview"></div>
+                    </div>
+                    <p class="upload-help">Add up to 5 images. First image will be the cover photo.</p>
+                </div>
+                <div class="form-actions">
+                    <button type="button" onclick="closeNewListing()">Cancel</button>
+                    <button type="submit">Create Listing</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Edit Profile Modal -->
+    <div id="edit-profile-modal" class="modal">
+        <div class="modal-content">
+            <span class="close-modal" onclick="closeEditProfile()">&times;</span>
+            <h2>Edit Profile</h2>
+            <form id="edit-profile-form">
+                <div class="form-group">
+                    <label for="profile-name">Full Name</label>
+                    <input type="text" id="profile-name" value="Sneha Menon" required>
+                </div>
+                <div class="form-group">
+                    <label for="profile-email">Email</label>
+                    <input type="email" id="profile-email" value="sneha.menon@cs.cusat.ac.in" required>
+                </div>
+                <div class="form-group">
+                    <label for="profile-dept">Department</label>
+                    <select id="profile-dept" required>
+                        <option value="cs">Computer Science Engineering</option>
+                        <option value="ec">Electronics & Communication</option>
+                        <option value="me">Mechanical Engineering</option>
+                        <option value="ce">Civil Engineering</option>
+                        <option value="ee">Electrical Engineering</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="profile-semester">Semester</label>
+                    <select id="profile-semester" required>
+                        <option value="s1">S1</option>
+                        <option value="s2">S2</option>
+                        <option value="s3">S3</option>
+                        <option value="s4">S4</option>
+                        <option value="s5">S5</option>
+                        <option value="s6" selected>S6</option>
+                        <option value="s7">S7</option>
+                        <option value="s8">S8</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="profile-phone">Phone Number</label>
+                    <input type="tel" id="profile-phone" value="9876543210">
+                </div>
+                <div class="form-group">
+                    <label for="profile-avatar">Profile Picture</label>
+                    <div class="avatar-upload">
+                        <div class="current-avatar">S</div>
+                        <button type="button" class="change-avatar-btn">Change Photo</button>
+                        <input type="file" id="profile-avatar" accept="image/*" hidden>
+                    </div>
+                </div>
+                <div class="form-actions">
+                    <button type="button" onclick="closeEditProfile()">Cancel</button>
+                    <button type="submit">Save Changes</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer>
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-logo">
+                    <div class="logo">CUSAT <span>Marketplace</span></div>
+                    <p>A place to buy and sell within the CUSAT community.</p>
+                </div>
+                <div class="footer-links">
+                    <h3>Quick Links</h3>
+                    <ul>
+                        <li><a href="#">Home</a></li>
+                        <li><a href="#">Browse Items</a></li>
+                        <li><a href="#">Sell an Item</a></li>
+                        <li><a href="#">My Profile</a></li>
+                    </ul>
+                </div>
+                <div class="footer-links">
+                    <h3>Categories</h3>
+                    <ul>
+                        <li><a href="#">Textbooks</a></li>
+                        <li><a href="#">Electronics</a></li>
+                        <li><a href="#">Clothing</a></li>
+                        <li><a href="#">Furniture</a></li>
+                    </ul>
+                </div>
+                <div class="footer-links">
+                    <h3>Support</h3>
+                    <ul>
+                        <li><a href="#">Help Center</a></li>
+                        <li><a href="#">Safety Tips</a></li>
+                        <li><a href="#">Report an Issue</a></li>
+                        <li><a href="#">Contact Us</a></li>
+                    </ul>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>&copy; 2025 CUSAT Marketplace. All rights reserved.</p>
+                <div class="footer-social">
+                    <a href="#"><i class="fab fa-facebook"></i></a>
+                    <a href="#"><i class="fab fa-instagram"></i></a>
+                    <a href="#"><i class="fab fa-twitter"></i></a>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Scripts -->
+    <script>
+        // Tab Navigation
+        function showHome() {
+            hideAllPanels();
+            document.getElementById('home-panel').classList.add('active');
+            document.body.scrollTop = 0; // Scroll to top
+        }
+        
+        function showCategories(category) {
+            hideAllPanels();
+            document.getElementById('categories-panel').classList.add('active');
+            if (category) {
+                filterCategory(category);
+            }
+        }
+        
+        function showMessages() {
+            hideAllPanels();
+            document.getElementById('messages-panel').classList.add('active');
+        }
+        
+        function showProfile() {
+            hideAllPanels();
+            document.getElementById('profile-panel').classList.add('active');
+        }
+        
+        function hideAllPanels() {
+            const panels = document.querySelectorAll('.tab-panel');
+            panels.forEach(panel => panel.classList.remove('active'));
+        }
+        
+        // Category Filtering
+        function filterCategory(category) {
+            const buttons = document.querySelectorAll('.categories-tabs .tab-btn');
+            buttons.forEach(btn => btn.classList.remove('active'));
+            
+            const button = document.querySelector(`.categories-tabs .tab-btn[onclick="filterCategory('${category}')"]`);
+            if (button) button.classList.add('active');
+            
+            // Implementation would filter products by category
+        }
+        
+        // Profile Tabs
+        function showProfileTab(tabId) {
+            const tabs = document.querySelectorAll('.profile-tab');
+            tabs.forEach(tab => tab.classList.remove('active'));
+            
+            const buttons = document.querySelectorAll('.profile-actions .tab-btn');
+            buttons.forEach(btn => btn.classList.remove('active'));
+            
+            document.getElementById(`${tabId}-tab`).classList.add('active');
+            document.querySelector(`.profile-actions .tab-btn[onclick="showProfileTab('${tabId}')"]`).classList.add('active');
+        }
+        
+        // Product Detail Modal
+        function showProductDetail() {
+              document.getElementById('product-detail-modal').style.display = 'flex';
+             document.body.style.overflow = 'hidden'; // Prevent scrolling
+        }
+
+        function closeProductDetail() {
+            document.getElementById('product-detail-modal').style.display = 'none';
+            document.body.style.overflow = 'auto'; // Restore scrolling
+        }
+        
+        // New Listing Modal
+        function showNewListing() {
+            document.getElementById('new-listing-modal').style.display = 'flex';
+        }
+        
+        function closeNewListing() {
+            document.getElementById('new-listing-modal').style.display = 'none';
+        }
+        
+        // Edit Profile Modal
+        function showEditProfile() {
+            document.getElementById('edit-profile-modal').style.display = 'flex';
+        }
+        
+        function closeEditProfile() {
+            document.getElementById('edit-profile-modal').style.display = 'none';
+        }
+        
+        // Event Listeners
+        document.addEventListener('DOMContentLoaded', function() {
+            // Add event listener for new listing button
+            const newListingBtn = document.querySelector('.new-listing-btn');
+            if (newListingBtn) {
+                newListingBtn.addEventListener('click', showNewListing);
+            }
+            
+            // Add event listener for edit profile button
+            const editProfileBtn = document.querySelector('.edit-profile-btn');
+            if (editProfileBtn) {
+                editProfileBtn.addEventListener('click', showEditProfile);
+            }
+            
+            // Close modals when clicking outside content
+            window.addEventListener('click', function(event) {
+                const modals = document.querySelectorAll('.modal');
+                modals.forEach(modal => {
+                    if (event.target === modal) {
+                        modal.style.display = 'none';
+                    }
+                });
+            });
+        });
+    </script>
+</body>
+</html>
