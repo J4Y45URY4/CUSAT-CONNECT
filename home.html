@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cusat-Connect - Home</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+    <link rel="stylesheet" href="styles.css">
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
+</head>
+<body>
+    <div class="title-bar">
+        <div class="logo">Cusat-Connect</div>
+        <div class="profile-icon">
+            <i class="fas fa-user-circle" onclick="window.location.href='profile.html'"></i>
+        </div>
+    </div>
+    <div class="dashboard">
+        <h1>Welcome to Cusat-Connect</h1>
+        <div class="app-drawer">
+            <button class="drawer-item" onclick="window.location.href='events/events.html'">
+                <i class="fas fa-calendar-alt"></i> Events
+            </button>
+            <button class="drawer-item" onclick="window.location.href='marketplace/marketplace.html'">
+                <i class="fas fa-store"></i> Marketplace
+            </button>
+            <button class="drawer-item" onclick="window.location.href='library/library.html'">
+                <i class="fas fa-book"></i> Library
+            </button>
+        </div>
+    </div>
+    <script src="script.js"></script>
+    <script>
+        const firebaseConfig = {
+            apiKey: "AIzaSyCY7QcrbnkQmMWfbmion01PAsu5_s5GUrM",
+            authDomain: "cusat-connect-50e90.firebaseapp.com",
+            projectId: "cusat-connect-50e90",
+            storageBucket: "cusat-connect-50e90.firebasestorage.app",
+            messagingSenderId: "255437667135",
+            appId: "1:255437667135:web:5c0c6216744679c101718a"
+        };
+        firebase.initializeApp(firebaseConfig);
+        firebase.auth().onAuthStateChanged(user => {
+            if (!user || !localStorage.getItem('uid')) window.location.href = 'index.html';
+        });
+    </script>
+</body>
+</html>

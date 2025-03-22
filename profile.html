@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cusat-Connect - Profile</title>
+    <link rel="stylesheet" href="styles.css">
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
+</head>
+<body>
+    <div class="title-bar">
+        <div class="logo"><a href="home.html">Cusat-Connect</a></div>
+        <div class="profile-icon">
+            <i class="fas fa-user-circle" onclick="window.location.href='profile.html'"></i>
+        </div>
+    </div>
+    <div class="container">
+        <h1>Your Profile</h1>
+        <div class="profile-details">
+            <p><strong>Name:</strong> <span id="profile-name"></span></p>
+            <p><strong>Email:</strong> <span id="profile-email"></span></p>
+            <p><strong>Reg No:</strong> <span id="profile-regno"></span></p>
+            <p><strong>Semester:</strong> <span id="profile-semester"></span></p>
+            <p><strong>Department:</strong> <span id="profile-department"></span></p>
+            <p><strong>Skills:</strong> <span id="profile-skills"></span></p>
+            <p><strong>Interests:</strong> <span id="profile-interests"></span></p>
+            <p><strong>Passion:</strong> <span id="profile-passion"></span></p>
+        </div>
+        <button class="signout-btn" onclick="signOut()">Sign Out</button>
+    </div>
+    <script src="script.js"></script>
+    <script>
+        const firebaseConfig = {
+            apiKey: "AIzaSyCY7QcrbnkQmMWfbmion01PAsu5_s5GUrM",
+            authDomain: "cusat-connect-50e90.firebaseapp.com",
+            projectId: "cusat-connect-50e90",
+            storageBucket: "cusat-connect-50e90.firebasestorage.app",
+            messagingSenderId: "255437667135",
+            appId: "1:255437667135:web:5c0c6216744679c101718a"
+        };
+        firebase.initializeApp(firebaseConfig);
+        firebase.auth().onAuthStateChanged(user => {
+            if (!user || !localStorage.getItem('uid')) {
+                window.location.href = 'index.html';
+            } else {
+                loadProfile(localStorage.getItem('uid'));
+            }
+        });
+    </script>
+</body>
+</html>

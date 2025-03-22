@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cusat-Connect - Sign In</title>
+    <link rel="stylesheet" href="styles.css">
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
+    <style>
+        /* Enhanced Dropdown Styling */
+        select {
+            width: 100%;
+            padding: 10px;
+            margin: 5px 0 15px 0;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            font-size: 16px;
+            background-color: #fff;
+            cursor: pointer;
+            transition: border-color 0.3s ease;
+        }
+        select:hover {
+            border-color: #888;
+        }
+        select:focus {
+            outline: none;
+            border-color: #007BFF;
+            box-shadow: 0 0 5px rgba(0, 123, 255, 0.5);
+        }
+        option {
+            padding: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="auth-container">
+        <h1>Welcome to Cusat-Connect</h1>
+        <button class="google-signin" onclick="continueWithGoogle()">Continue with Google</button>
+        <div id="signup-form" class="signup-form" style="display: none;">
+            <h2>Complete Your Registration</h2>
+            <div id="form-step-1" class="form-step active">
+                <label>Name</label>
+                <input type="text" id="name" placeholder="Enter your name">
+                <button onclick="nextStep(1)">Next</button>
+            </div>
+            <div id="form-step-2" class="form-step">
+                <label>Registration Number</label>
+                <input type="text" id="regno" placeholder="e.g., CS12345">
+                <button onclick="prevStep(2)">Back</button>
+                <button onclick="nextStep(2)">Next</button>
+            </div>
+            <div id="form-step-3" class="form-step">
+                <label>Semester</label>
+                <select id="semester">
+                    <option value="">Select Semester</option>
+                </select>
+                <button onclick="prevStep(3)">Back</button>
+                <button onclick="nextStep(3)">Next</button>
+            </div>
+            <div id="form-step-4" class="form-step">
+                <label>Department</label>
+                <select id="department">
+                    <option value="">Select Department</option>
+                </select>
+                <button onclick="prevStep(4)">Back</button>
+                <button onclick="nextStep(4)">Next</button>
+            </div>
+            <div id="form-step-5" class="form-step">
+                <label>Skills (Hold Ctrl/Cmd to select multiple)</label>
+                <select id="skills" multiple>
+                    <option value="">Select Skills</option>
+                </select>
+                <button onclick="prevStep(5)">Back</button>
+                <button onclick="nextStep(5)">Next</button>
+            </div>
+            <div id="form-step-6" class="form-step">
+                <label>Interests (Hold Ctrl/Cmd to select multiple)</label>
+                <select id="interests" multiple>
+                    <option value="">Select Interests</option>
+                </select>
+                <button onclick="prevStep(6)">Back</button>
+                <button onclick="nextStep(6)">Next</button>
+            </div>
+            <div id="form-step-7" class="form-step">
+                <label>Passion</label>
+                <select id="passion">
+                    <option value="">Select Passion</option>
+                </select>
+                <button onclick="prevStep(7)">Back</button>
+                <button onclick="completeRegistration()">Finish</button>
+            </div>
+        </div>
+    </div>
+    <script src="script.js"></script>
+    <script>
+        const firebaseConfig = {
+            apiKey: "AIzaSyCY7QcrbnkQmMWfbmion01PAsu5_s5GUrM",
+            authDomain: "cusat-connect-50e90.firebaseapp.com",
+            projectId: "cusat-connect-50e90",
+            storageBucket: "cusat-connect-50e90.firebasestorage.app",
+            messagingSenderId: "255437667135",
+            appId: "1:255437667135:web:5c0c6216744679c101718a"
+        };
+        firebase.initializeApp(firebaseConfig);
+
+        firebase.auth().onAuthStateChanged(user => {
+            if (user && localStorage.getItem('uid')) {
+                checkUserExists(user.uid, true);
+            } else if (user) {
+                localStorage.setItem('uid', user.uid);
+                checkUserExists(user.uid, false);
+            }
+        });
+
+        document.addEventListener('DOMContentLoaded', () => {
+            populateDropdowns();
+        });
+    </script>
+</body>
+</html>
