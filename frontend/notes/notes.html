@@ -1,0 +1,475 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>StudyNotes - Student Notes Portal</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <!-- Welcome Overlay -->
+    <div class="welcome-overlay" id="welcomeOverlay">
+        <div class="welcome-logo">StudyNotes</div>
+        <p class="welcome-message">Your one-stop destination for all academic notes. Organized by departments and semesters for easy access.</p>
+        <button class="welcome-button" id="enterButton">Enter</button>
+    </div>
+    
+    <!-- Header -->
+    <header class="header">
+        <div class="logo">StudyNotes</div>
+        <div class="search-container">
+            <input type="text" class="search-bar" id="searchBar" placeholder="Search for notes...">
+            <button class="search-button" id="searchButton">Search</button>
+        </div>
+    </header>
+    
+    <!-- Main Content -->
+    <div class="main-container">
+        <h1 class="title">Student Notes Portal</h1>
+        <p class="subtitle">Select your department to access course materials and lecture notes</p>
+        
+        <div class="departments-grid" id="departmentsGrid"></div>
+    </div>
+    
+    <!-- Department Modal -->
+    <div class="modal" id="departmentModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 class="modal-title" id="modalTitle">Department</h2>
+                <button class="close-button" id="closeModal">×</button>
+            </div>
+            <div class="modal-body" id="modalBody"></div>
+        </div>
+    </div>
+    
+    <!-- Search Results Modal -->
+    <div class="modal" id="searchModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 class="modal-title">Search Results</h2>
+                <button class="close-button" id="closeSearchModal">×</button>
+            </div>
+            <div class="modal-body" id="searchModalBody"></div>
+        </div>
+    </div>
+    
+    <script>
+        // Airtable Configuration
+        const AIRTABLE_PAT = 'pate5r7JSDV1BfXJR.cbe81f76c73b71ce8b399b2d71426cb7e0f89df7fefc4b8f9e2c97190381e191';
+        const AIRTABLE_BASE_ID = 'appAN1TbPo89WT3mA';
+        const DEPARTMENTS_TABLE = 'Departments';
+        const SEMESTERS_TABLE = 'Semesters';
+        const SUBJECTS_TABLE = 'Subjects';
+        const NOTES_TABLE = 'Notes';
+
+        // DOM Elements
+        const welcomeOverlay = document.getElementById('welcomeOverlay');
+        const enterButton = document.getElementById('enterButton');
+        const departmentsGrid = document.getElementById('departmentsGrid');
+        const departmentModal = document.getElementById('departmentModal');
+        const modalTitle = document.getElementById('modalTitle');
+        const modalBody = document.getElementById('modalBody');
+        const closeModal = document.getElementById('closeModal');
+        const searchBar = document.getElementById('searchBar');
+        const searchButton = document.getElementById('searchButton');
+        const searchModal = document.getElementById('searchModal');
+        const searchModalBody = document.getElementById('searchModalBody');
+        const closeSearchModal = document.getElementById('closeSearchModal');
+
+        // Data storage
+        let currentDept = null;
+        let currentSem = null;
+        let currentSubject = null;
+        let breadcrumbHistory = [];
+        let departmentsData = {};
+        let allNotes = []; // Store all notes for search
+
+        // Fetch Departments from Airtable
+        async function fetchDepartments() {
+            try {
+                const response = await fetch(
+                    `https://api.airtable.com/v0/${AIRTABLE_BASE_ID}/${DEPARTMENTS_TABLE}`,
+                    { headers: { Authorization: `Bearer ${AIRTABLE_PAT}` } }
+                );
+                if (!response.ok) throw new Error('Failed to fetch departments');
+                const data = await response.json();
+                departmentsData = data.records.reduce((acc, record) => {
+                    acc[record.id] = {
+                        id: record.id,
+                        name: record.fields.Name,
+                        description: record.fields.Description,
+                        icon: record.fields.Icon,
+                        color: record.fields.Color
+                    };
+                    return acc;
+                }, {});
+                renderDepartments();
+            } catch (error) {
+                console.error('Error fetching departments:', error);
+                departmentsGrid.innerHTML = `<p class="error-message">Failed to load departments: ${error.message}</p>`;
+            }
+        }
+
+        // Fetch Semesters for a Department
+        async function fetchSemesters(deptId) {
+            try {
+                const response = await fetch(
+                    `https://api.airtable.com/v0/${AIRTABLE_BASE_ID}/${SEMESTERS_TABLE}?filterByFormula={Department}='${deptId}'`,
+                    { headers: { Authorization: `Bearer ${AIRTABLE_PAT}` } }
+                );
+                if (!response.ok) throw new Error('Failed to fetch semesters');
+                const data = await response.json();
+                return data.records.map(record => ({
+                    id: record.id,
+                    semesterId: record.fields.SemesterID,
+                    name: record.fields.Name,
+                    deptId: record.fields.Department[0]
+                }));
+            } catch (error) {
+                console.error('Error fetching semesters:', error);
+                return [];
+            }
+        }
+
+        // Fetch Subjects for a Semester
+        async function fetchSubjects(semId) {
+            try {
+                const response = await fetch(
+                    `https://api.airtable.com/v0/${AIRTABLE_BASE_ID}/${SUBJECTS_TABLE}?filterByFormula={Semester}='${semId}'`,
+                    { headers: { Authorization: `Bearer ${AIRTABLE_PAT}` } }
+                );
+                if (!response.ok) throw new Error('Failed to fetch subjects');
+                const data = await response.json();
+                return data.records.map(record => ({
+                    id: record.id,
+                    subjectId: record.fields.SubjectID,
+                    name: record.fields.Name,
+                    credits: record.fields.Credits,
+                    semId: record.fields.Semester[0]
+                }));
+            } catch (error) {
+                console.error('Error fetching subjects:', error);
+                return [];
+            }
+        }
+
+        // Fetch All Notes for Search (and regular display)
+        async function fetchAllNotes() {
+            try {
+                const response = await fetch(
+                    `https://api.airtable.com/v0/${AIRTABLE_BASE_ID}/${NOTES_TABLE}`,
+                    { headers: { Authorization: `Bearer ${AIRTABLE_PAT}` } }
+                );
+                if (!response.ok) throw new Error('Failed to fetch notes');
+                const data = await response.json();
+                allNotes = await Promise.all(data.records.map(async record => {
+                    const subjectId = record.fields.Subject[0];
+                    const subjectResp = await fetch(
+                        `https://api.airtable.com/v0/${AIRTABLE_BASE_ID}/${SUBJECTS_TABLE}/${subjectId}`,
+                        { headers: { Authorization: `Bearer ${AIRTABLE_PAT}` } }
+                    );
+                    const subjectData = await subjectResp.json();
+                    const semId = subjectData.fields.Semester[0];
+                    const semResp = await fetch(
+                        `https://api.airtable.com/v0/${AIRTABLE_BASE_ID}/${SEMESTERS_TABLE}/${semId}`,
+                        { headers: { Authorization: `Bearer ${AIRTABLE_PAT}` } }
+                    );
+                    const semData = await semResp.json();
+                    const deptId = semData.fields.Department[0];
+                    const dept = departmentsData[deptId];
+                    return {
+                        id: record.id,
+                        noteId: record.fields.NoteID,
+                        name: record.fields.Name,
+                        date: record.fields.Date,
+                        type: record.fields.Type,
+                        fileUrl: record.fields.File && record.fields.File[0] ? record.fields.File[0].url : null,
+                        subjectId: subjectId,
+                        subjectName: subjectData.fields.Name,
+                        semId: semId,
+                        semName: semData.fields.Name,
+                        deptId: deptId,
+                        deptName: dept ? dept.name : 'Unknown'
+                    };
+                }));
+            } catch (error) {
+                console.error('Error fetching all notes:', error);
+            }
+        }
+
+        // Fetch Notes for a Subject (for department navigation)
+        async function fetchNotes(subjectId) {
+            try {
+                const response = await fetch(
+                    `https://api.airtable.com/v0/${AIRTABLE_BASE_ID}/${NOTES_TABLE}?filterByFormula={Subject}='${subjectId}'`,
+                    { headers: { Authorization: `Bearer ${AIRTABLE_PAT}` } }
+                );
+                if (!response.ok) throw new Error('Failed to fetch notes');
+                const data = await response.json();
+                return data.records.map(record => ({
+                    id: record.id,
+                    noteId: record.fields.NoteID,
+                    name: record.fields.Name,
+                    date: record.fields.Date,
+                    type: record.fields.Type,
+                    fileUrl: record.fields.File && record.fields.File[0] ? record.fields.File[0].url : null
+                }));
+            } catch (error) {
+                console.error('Error fetching notes:', error);
+                return [];
+            }
+        }
+
+        // Render Departments
+        function renderDepartments() {
+            departmentsGrid.innerHTML = '';
+            Object.values(departmentsData).forEach(dept => {
+                departmentsGrid.innerHTML += `
+                    <div class="department-card" data-dept="${dept.id}">
+                        <div class="department-icon" style="background-color: ${dept.color};">${dept.icon}</div>
+                        <div class="department-info">
+                            <h3 class="department-name">${dept.name}</h3>
+                            <p class="department-desc">${dept.description}</p>
+                        </div>
+                    </div>
+                `;
+            });
+            document.querySelectorAll('.department-card').forEach(card => {
+                card.addEventListener('click', () => {
+                    const deptId = card.getAttribute('data-dept');
+                    openDepartment(deptId);
+                });
+            });
+        }
+
+        // Welcome overlay handler
+        enterButton.addEventListener('click', () => {
+            welcomeOverlay.style.opacity = '0';
+            setTimeout(() => {
+                welcomeOverlay.style.display = 'none';
+            }, 500);
+        });
+
+        // Close modal handlers
+        closeModal.addEventListener('click', () => {
+            departmentModal.style.display = 'none';
+        });
+
+        closeSearchModal.addEventListener('click', () => {
+            searchModal.style.display = 'none';
+        });
+
+        // Open department handler
+        async function openDepartment(deptId) {
+            currentDept = deptId;
+            currentSem = null;
+            currentSubject = null;
+            breadcrumbHistory = [departmentsData[deptId].name];
+            
+            modalTitle.textContent = departmentsData[deptId].name;
+            
+            const semesters = await fetchSemesters(deptId);
+            let content = `
+                <div class="breadcrumb">
+                    <div class="breadcrumb-item">${departmentsData[deptId].name}</div>
+                </div>
+                <div class="semester-list">
+            `;
+            
+            if (semesters.length > 0) {
+                semesters.forEach(sem => {
+                    content += `
+                        <div class="semester-item" data-sem="${sem.id}">
+                            <div class="semester-name">${sem.name}</div>
+                        </div>
+                    `;
+                });
+            } else {
+                content += `<p>No semesters available yet.</p>`;
+            }
+            
+            content += `</div>`;
+            modalBody.innerHTML = content;
+            
+            const semesterItems = modalBody.querySelectorAll('.semester-item');
+            semesterItems.forEach(item => {
+                item.addEventListener('click', () => {
+                    const semId = item.getAttribute('data-sem');
+                    openSemester(semId);
+                });
+            });
+            
+            departmentModal.style.display = 'flex';
+        }
+
+        // Open semester handler
+        async function openSemester(semId) {
+            currentSem = semId;
+            currentSubject = null;
+            
+            const semesters = await fetchSemesters(currentDept);
+            const sem = semesters.find(s => s.id === semId);
+            breadcrumbHistory.push(sem.name);
+            
+            let content = `
+                <div class="breadcrumb">
+                    <div class="breadcrumb-item" onclick="openDepartment('${currentDept}')">${departmentsData[currentDept].name}</div>
+                    <div class="breadcrumb-item">${sem.name}</div>
+                </div>
+                <button class="back-button" onclick="openDepartment('${currentDept}')">← Back to Semesters</button>
+                <div class="subject-list">
+            `;
+            
+            const subjects = await fetchSubjects(semId);
+            if (subjects.length > 0) {
+                subjects.forEach(subject => {
+                    content += `
+                        <div class="subject-item" data-subject="${subject.id}">
+                            <div class="subject-name">${subject.name}</div>
+                            <div class="subject-credit">${subject.credits} Credits</div>
+                        </div>
+                    `;
+                });
+            } else {
+                content += `<p>No subjects available for this semester yet.</p>`;
+            }
+            
+            content += `</div>`;
+            modalBody.innerHTML = content;
+            
+            const subjectItems = modalBody.querySelectorAll('.subject-item');
+            subjectItems.forEach(item => {
+                item.addEventListener('click', () => {
+                    const subjectId = item.getAttribute('data-subject');
+                    openSubject(subjectId);
+                });
+            });
+        }
+
+        // Open subject handler
+        async function openSubject(subjectId) {
+            currentSubject = subjectId;
+            
+            const semesters = await fetchSemesters(currentDept);
+            const sem = semesters.find(s => s.id === currentSem);
+            const subjects = await fetchSubjects(currentSem);
+            const subject = subjects.find(s => s.id === subjectId);
+            breadcrumbHistory.push(subject.name);
+            
+            let content = `
+                <div class="breadcrumb">
+                    <div class="breadcrumb-item" onclick="openDepartment('${currentDept}')">${departmentsData[currentDept].name}</div>
+                    <div class="breadcrumb-item" onclick="openSemester('${currentSem}')">${sem.name}</div>
+                    <div class="breadcrumb-item">${subject.name}</div>
+                </div>
+                <button class="back-button" onclick="openSemester('${currentSem}')">← Back to Subjects</button>
+                <div class="notes-list">
+            `;
+            
+            const notes = await fetchNotes(subjectId);
+            if (notes.length > 0) {
+                notes.forEach(note => {
+                    content += `
+                        <div class="notes-item">
+                            <div class="notes-name">${note.name} <span class="notes-badge">${note.type}</span></div>
+                            <div class="notes-date">Uploaded: ${note.date}</div>
+                            ${
+                                note.fileUrl
+                                    ? `<button class="download-button" onclick="window.open('${note.fileUrl}', '_blank')">Download PDF</button>`
+                                    : `<p class="error-message">No PDF available</p>`
+                            }
+                        </div>
+                    `;
+                });
+            } else {
+                content += `<p>No notes available for this subject yet.</p>`;
+            }
+            
+            content += `</div>`;
+            modalBody.innerHTML = content;
+        }
+
+        // Search handler
+        function searchNotes(query) {
+            if (!query.trim()) {
+                searchModalBody.innerHTML = `<p>Please enter a search term.</p>`;
+                searchModal.style.display = 'flex';
+                return;
+            }
+
+            const filteredNotes = allNotes.filter(note => 
+                note.name.toLowerCase().includes(query.toLowerCase()) ||
+                note.subjectName.toLowerCase().includes(query.toLowerCase()) ||
+                note.semName.toLowerCase().includes(query.toLowerCase()) ||
+                note.deptName.toLowerCase().includes(query.toLowerCase())
+            );
+
+            let content = `<div class="notes-list">`;
+            if (filteredNotes.length > 0) {
+                filteredNotes.forEach(note => {
+                    content += `
+                        <div class="notes-item">
+                            <div class="notes-name">${note.name} <span class="notes-badge">${note.type}</span></div>
+                            <div class="notes-date">Uploaded: ${note.date}</div>
+                            <p>${note.deptName} > ${note.semName} > ${note.subjectName}</p>
+                            ${
+                                note.fileUrl
+                                    ? `<button class="download-button" onclick="window.open('${note.fileUrl}', '_blank')">Download PDF</button>`
+                                    : `<p class="error-message">No PDF available</p>`
+                            }
+                        </div>
+                    `;
+                });
+            } else {
+                content += `<p>No notes found matching "${query}".</p>`;
+            }
+            content += `</div>`;
+            searchModalBody.innerHTML = content;
+            searchModal.style.display = 'flex';
+        }
+
+        // Event listeners
+        searchButton.addEventListener('click', () => {
+            searchNotes(searchBar.value);
+        });
+
+        searchBar.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                searchNotes(searchBar.value);
+            }
+        });
+
+        // Event delegation for breadcrumb navigation
+        document.addEventListener('click', (e) => {
+            if (e.target.classList.contains('breadcrumb-item')) {
+                const index = Array.from(e.target.parentNode.children).indexOf(e.target);
+                if (index === 0) {
+                    openDepartment(currentDept);
+                } else if (index === 1 && currentSem) {
+                    openSemester(currentSem);
+                }
+            }
+        });
+
+        // Make functions global for onclick attributes
+        window.openDepartment = openDepartment;
+        window.openSemester = openSemester;
+        window.openSubject = openSubject;
+
+        // Close modal when clicking outside
+        window.addEventListener('click', (e) => {
+            if (e.target === departmentModal) {
+                departmentModal.style.display = 'none';
+            } else if (e.target === searchModal) {
+                searchModal.style.display = 'none';
+            }
+        });
+
+        // Initial load
+        document.addEventListener('DOMContentLoaded', async () => {
+            await fetchDepartments();
+            await fetchAllNotes(); // Fetch all notes for search
+        });
+    </script>
+</body>
+</html>
