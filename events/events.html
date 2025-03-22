@@ -64,7 +64,7 @@
             font-size: 1.1em;
             margin-bottom: 10px;
             font-weight: 600;
-            color: #3498db;
+            color: #1e3a8a; /* Dark blue */
         }
         .user-card .section p {
             margin: 5px 0;
@@ -88,7 +88,7 @@
             display: block;
             width: 100%;
             padding: 12px;
-            background: #3498db;
+            background: #1e3a8a; /* Dark blue */
             color: white;
             border: none;
             border-radius: 25px;
@@ -99,9 +99,9 @@
             margin-top: 25px;
         }
         .user-card .edit-button:hover {
-            background: #2980b9;
+            background: #1e2a6a; /* Darker blue for hover */
         }
-        /* Modal */
+        /* Modal (Edit Profile and Profile) */
         .modal {
             display: none;
             position: fixed;
@@ -125,7 +125,7 @@
         }
         .modal-content h3 {
             margin-top: 0;
-            color: #3498db;
+            color: #1e3a8a; /* Dark blue */
         }
         .modal-content .section {
             margin: 20px 0;
@@ -159,7 +159,7 @@
         }
         .modal-content button {
             padding: 10px 20px;
-            background: #3498db;
+            background: #1e3a8a; /* Dark blue */
             color: white;
             border: none;
             border-radius: 25px;
@@ -167,7 +167,7 @@
             margin-top: 10px;
         }
         .modal-content button:hover {
-            background: #2980b9;
+            background: #1e2a6a; /* Darker blue for hover */
         }
         /* Main Content */
         .main-content {
@@ -185,7 +185,7 @@
             border-radius: 15px;
             box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
             margin-bottom: 20px;
-            position: sticky; /* Make tabs static while scrolling */
+            position: sticky;
             top: 0;
             z-index: 10;
         }
@@ -200,14 +200,14 @@
             z-index: 1;
         }
         .tabs div.active {
-            color: #3498db;
+            color: #1e3a8a; /* Dark blue */
             transform: scale(1.1);
         }
         .tabs .highlight {
             position: absolute;
             top: 5px;
             bottom: 5px;
-            background: rgba(52, 152, 219, 0.1); /* Super light blue background */
+            background: rgba(30, 58, 138, 0.1); /* Light dark blue */
             border-radius: 15px;
             transition: all 0.3s ease;
             z-index: 0;
@@ -229,9 +229,9 @@
             margin-bottom: 20px;
             box-sizing: border-box;
             position: sticky;
-            top: 60px; /* Adjust based on tabs height */
+            top: 60px;
             z-index: 9;
-            transition: transform 0.3s ease, opacity 0.3s ease; /* Smooth transition for hide/show */
+            transition: transform 0.3s ease, opacity 0.3s ease;
         }
         .search-filter.hidden {
             transform: translateY(-100%);
@@ -265,8 +265,7 @@
         .filter {
             width: 100%;
             display: flex;
-            justify-content: space-between;
-            align-items: center;
+            flex-direction: column;
             padding: 0 15px;
             box-sizing: border-box;
         }
@@ -274,11 +273,9 @@
             list-style: none;
             display: flex;
             justify-content: flex-start;
-            flex-wrap: wrap;
             padding: 0;
-            margin: 0;
+            margin: 0 0 10px 0;
             gap: 8px;
-            flex: 1; /* Allow the list to take available space */
         }
         .filter ul li {
             padding: 6px 18px;
@@ -290,12 +287,17 @@
             transition: background 0.3s ease;
         }
         .filter ul li.active {
-            background: #3498db;
+            background: #1e3a8a; /* Dark blue */
             color: white;
         }
-        .filter .ai-button {
+        .filter .buttons {
+            display: flex;
+            justify-content: flex-end;
+            gap: 10px;
+        }
+        .filter .ai-button, .filter .profile-button {
             padding: 8px 20px;
-            background: #3498db;
+            background: #1e3a8a; /* Dark blue */
             color: white;
             border: none;
             border-radius: 25px;
@@ -304,13 +306,15 @@
             font-weight: 500;
             transition: background 0.3s ease;
             flex-shrink: 0;
-            margin-left: 10px; /* Add spacing between filter list and button */
         }
-        .filter .ai-button:hover {
-            background: #2980b9;
+        .filter .ai-button:hover, .filter .profile-button:hover {
+            background: #1e2a6a; /* Darker blue for hover */
         }
         .filter .ai-button.toggled {
             background: #7f8c8d;
+        }
+        .filter .profile-button {
+            display: none; /* Hidden by default, shown on mobile */
         }
         .event-grid {
             display: grid;
@@ -377,7 +381,7 @@
         }
         .event-card .keywords {
             font-size: 0.8em;
-            color: #3498db;
+            color: #1e3a8a; /* Dark blue */
             margin-top: 10px;
             display: flex;
             flex-direction: row;
@@ -399,7 +403,7 @@
             width: calc(100% - 30px);
             margin: 10px auto 0;
             padding: 10px;
-            background: #3498db;
+            background: #1e3a8a; /* Dark blue */
             color: white;
             border-radius: 20px;
             font-size: 0.9em;
@@ -409,7 +413,7 @@
             box-sizing: border-box;
         }
         .event-card .know-more:hover {
-            background: #2980b9;
+            background: #1e2a6a; /* Darker blue for hover */
         }
         footer {
             text-align: center;
@@ -421,38 +425,159 @@
         @media (max-width: 768px) {
             .container {
                 flex-direction: column;
+                padding: 10px;
             }
             .user-card {
-                width: 100%;
-                max-width: 280px;
-                margin: 0 auto 20px;
-                position: relative;
-                height: auto;
+                display: none; /* Hidden on mobile */
             }
             .main-content {
-                padding-left: 0;
                 margin-left: 0;
+                padding-left: 0;
             }
-            .search-bar, .filter {
-                max-width: 100%;
+            .tabs {
+                justify-content: flex-start;
+                overflow-x: auto;
+                white-space: nowrap;
+                padding: 5px 10px;
+                margin-bottom: 10px;
+                border-radius: 0;
+                position: static;
+            }
+            .tabs div {
+                padding: 8px 15px;
+                font-size: 1em;
+                display: inline-block;
+            }
+            .tabs .highlight {
+                display: none; /* Hide highlight on mobile */
+            }
+            .search-filter {
+                padding: 10px;
+                position: static;
+                border-radius: 0;
+            }
+            .search-bar {
+                padding: 0 10px;
             }
             .search-bar input {
-                width: 100%;
+                padding: 8px 35px 8px 15px;
+                font-size: 0.9em;
+            }
+            .search-bar .search-icon {
+                right: 20px;
+                font-size: 1em;
             }
             .filter {
                 flex-direction: column;
-                align-items: flex-start;
+                padding: 0 10px;
             }
-            .filter .ai-button {
-                margin-top: 10px;
-                margin-left: 0;
+            .filter ul {
+                overflow-x: auto;
+                white-space: nowrap;
+                justify-content: flex-start;
+                margin-bottom: 10px;
+            }
+            .filter ul li {
+                padding: 5px 15px;
+                font-size: 0.8em;
+                display: inline-block;
+            }
+            .filter .buttons {
+                justify-content: flex-end;
+            }
+            .filter .ai-button, .filter .profile-button {
+                padding: 8px 15px;
+                font-size: 0.85em;
+            }
+            .filter .profile-button {
+                display: block; /* Show profile button on mobile */
+            }
+            .event-grid {
+                grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+                gap: 15px;
+            }
+            .event-card {
+                height: 280px;
+            }
+            .modal-content {
+                width: 90%;
+                padding: 15px;
+            }
+        }
+        @media (max-width: 480px) {
+            .container {
+                padding: 5px;
+            }
+            .tabs div {
+                padding: 6px 10px;
+                font-size: 0.9em;
+            }
+            .search-bar input {
+                padding: 6px 30px 6px 10px;
+                font-size: 0.85em;
+            }
+            .search-bar .search-icon {
+                right: 15px;
+                font-size: 0.9em;
+            }
+            .filter ul li {
+                padding: 4px 12px;
+                font-size: 0.75em;
+            }
+            .filter .ai-button, .filter .profile-button {
+                padding: 6px 12px;
+                font-size: 0.8em;
+            }
+            .event-grid {
+                grid-template-columns: 1fr;
+                gap: 10px;
+            }
+            .event-card {
+                height: 260px;
+            }
+            .event-card h3 {
+                font-size: 1em;
+            }
+            .event-card p {
+                font-size: 0.8em;
+            }
+            .event-card .keywords span {
+                padding: 4px 8px;
+                font-size: 0.75em;
+            }
+            .event-card .know-more {
+                padding: 8px;
+                font-size: 0.85em;
+            }
+            .modal-content {
+                width: 95%;
+                padding: 10px;
+            }
+            .modal-content h3 {
+                font-size: 1.2em;
+            }
+            .modal-content .keywords span {
+                padding: 4px 8px;
+                font-size: 0.75em;
+            }
+            .modal-content select {
+                padding: 6px;
+                font-size: 0.85em;
+            }
+            .modal-content button {
+                padding: 8px 15px;
+                font-size: 0.9em;
+            }
+            footer {
+                font-size: 0.8em;
+                margin-top: 20px;
             }
         }
     </style>
 </head>
 <body>
     <div class="container">
-        <!-- User Card -->
+        <!-- User Card (Visible on Desktop) -->
         <div class="user-card">
             <img src="https://amreckenya.org/wp-content/uploads/2020/11/403022_business-man_male_user_avatar_profile_icon-1.png" alt="Profile Picture" class="profile-pic">
             <h2>John Doe</h2>
@@ -537,9 +662,43 @@
             </div>
         </div>
 
+        <!-- Profile Modal (Visible on Mobile) -->
+        <div class="modal" id="profileModal">
+            <div class="modal-content">
+                <img src="https://amreckenya.org/wp-content/uploads/2020/11/403022_business-man_male_user_avatar_profile_icon-1.png" alt="Profile Picture" class="profile-pic">
+                <h2>John Doe</h2>
+                <div class="details">Computer Science, Semester 5</div>
+                
+                <div class="section">
+                    <h3>Skills</h3>
+                    <div class="keywords" id="profileSkillsList">
+                        <span>HTML</span>
+                        <span>CSS</span>
+                    </div>
+                </div>
+                
+                <div class="section">
+                    <h3>Interests</h3>
+                    <div class="keywords" id="profileInterestsList">
+                        <span>Technology</span>
+                        <span>Software</span>
+                    </div>
+                </div>
+                
+                <div class="section">
+                    <h3>Aspire to Be</h3>
+                    <div class="keywords" id="profileAspireList">
+                        <span>Web Developer</span>
+                    </div>
+                </div>
+                
+                <button class="edit-button" onclick="openEditModalFromProfile()" aria-label="Edit Profile">Edit Profile</button>
+            </div>
+        </div>
+
         <!-- Main Content -->
         <div class="main-content">
-            <!-- Tabs -->
+            <!-- Tabs (Moved to Top) -->
             <div class="tabs" id="tabs">
                 <div class="active" onclick="switchTab('events')" tabindex="0" aria-label="Events Tab">Events</div>
                 <div onclick="switchTab('internships')" tabindex="0" aria-label="Internships Tab">Internships</div>
@@ -563,7 +722,10 @@
                             <li data-category="hackathons" tabindex="0" aria-label="Hackathons Category">Hackathons</li>
                             <li data-category="workshops" tabindex="0" aria-label="Workshops Category">Workshops</li>
                         </ul>
-                        <button class="ai-button" id="aiButton" onclick="toggleAIPersonalization()" aria-label="Toggle AI Personalization">AI Personalize</button>
+                        <div class="buttons">
+                            <button class="profile-button" onclick="openProfileModal()" aria-label="View Profile">Profile</button>
+                            <button class="ai-button" id="aiButton" onclick="toggleAIPersonalization()" aria-label="Toggle AI Personalization">AI Personalize</button>
+                        </div>
                     </div>
                 </div>
 
@@ -642,7 +804,6 @@
     <footer>© 2025 EventSync - Powered by xAI</footer>
 
     <script>
-        // User data
         let user = {
             skills: ["HTML", "CSS"],
             interests: ["Technology", "Software"],
@@ -653,7 +814,6 @@
         let aiToggled = false;
         let eventGridContent = document.getElementById("eventGrid").innerHTML;
 
-        // Tab highlight animation
         function updateTabHighlight() {
             const activeTab = document.querySelector(".tabs div.active");
             const highlight = document.querySelector(".tabs .highlight");
@@ -664,7 +824,6 @@
         window.addEventListener("load", updateTabHighlight);
         window.addEventListener("resize", updateTabHighlight);
 
-        // Search functionality with Debouncing
         function filterEvents() {
             const searchValue = document.getElementById("searchInput").value.toLowerCase();
             const eventCards = document.querySelectorAll(".event-card");
@@ -684,7 +843,6 @@
             });
         }
 
-        // Debounce function
         function debounce(func, wait) {
             let timeout;
             return function executedFunction(...args) {
@@ -699,7 +857,6 @@
 
         const debouncedFilterEvents = debounce(filterEvents, 300);
 
-        // Category filter functionality
         document.getElementById("categoryFilter").addEventListener("click", function(e) {
             if (e.target.tagName === "LI") {
                 const category = e.target.getAttribute("data-category");
@@ -725,7 +882,6 @@
             }
         });
 
-        // Keyboard Navigation for Filters
         document.querySelectorAll("#categoryFilter li").forEach(item => {
             item.addEventListener("keydown", (e) => {
                 if (e.key === "Enter" || e.key === " ") {
@@ -734,7 +890,6 @@
             });
         });
 
-        // Tab navigation with animation
         function switchTab(tab) {
             document.querySelectorAll(".tabs div").forEach(tab => tab.classList.remove("active"));
             document.querySelector(`.tabs div[onclick="switchTab('${tab}')"]`).classList.add("active");
@@ -752,7 +907,6 @@
             }
         }
 
-        // Keyboard Navigation for Tabs
         document.querySelectorAll(".tabs div").forEach(item => {
             item.addEventListener("keydown", (e) => {
                 if (e.key === "Enter" || e.key === " ") {
@@ -761,7 +915,6 @@
             });
         });
 
-        // AI Personalization
         function personalizeSuggestions() {
             const eventCards = document.querySelectorAll(".event-card");
             eventCards.forEach(card => {
@@ -771,9 +924,9 @@
 
                 if (skillMatch || goalMatch) {
                     if (!user.skills.includes("JavaScript") && keywords.includes("javascript")) {
-                        card.style.border = "2px solid #3498db";
+                        card.style.border = "2px solid #1e3a8a"; /* Dark blue */
                     } else if (!user.skills.includes("Bootstrap") && keywords.includes("bootstrap")) {
-                        card.style.border = "2px solid #3498db";
+                        card.style.border = "2px solid #1e3a8a"; /* Dark blue */
                     }
                     card.style.opacity = "1";
                 } else {
@@ -782,7 +935,6 @@
             });
         }
 
-        // Toggle AI Personalization
         function toggleAIPersonalization() {
             const aiButton = document.getElementById("aiButton");
             if (!aiToggled) {
@@ -807,14 +959,29 @@
             aiToggled = false;
         }
 
-        // Edit Profile Modal
         function openEditModal() {
             const modal = document.getElementById("editModal");
             modal.style.display = "flex";
         }
 
+        function openEditModalFromProfile() {
+            closeProfileModal();
+            openEditModal();
+        }
+
         function closeModal() {
             const modal = document.getElementById("editModal");
+            modal.style.display = "none";
+        }
+
+        function openProfileModal() {
+            const modal = document.getElementById("profileModal");
+            modal.style.display = "flex";
+            updateProfileModal();
+        }
+
+        function closeProfileModal() {
+            const modal = document.getElementById("profileModal");
             modal.style.display = "none";
         }
 
@@ -846,11 +1013,18 @@
             `).join("");
         }
 
+        function updateProfileModal() {
+            document.getElementById("profileSkillsList").innerHTML = user.skills.map(skill => `<span>${skill}</span>`).join("");
+            document.getElementById("profileInterestsList").innerHTML = user.interests.map(interest => `<span>${interest}</span>`).join("");
+            document.getElementById("profileAspireList").innerHTML = user.aspire.map(aspire => `<span>${aspire}</span>`).join("");
+        }
+
         function saveProfile() {
             document.getElementById("skillsList").innerHTML = user.skills.map(skill => `<span>${skill}</span>`).join("");
             document.getElementById("interestsList").innerHTML = user.interests.map(interest => `<span>${interest}</span>`).join("");
             document.getElementById("aspireList").innerHTML = user.aspire.map(aspire => `<span>${aspire}</span>`).join("");
             user.careerGoal = user.aspire[0] || "Web Developer";
+            updateProfileModal();
             closeModal();
         }
 
@@ -860,21 +1034,26 @@
             }
         });
 
-        // Scroll behavior for search filter
-        let lastScrollTop = 0;
-        window.addEventListener("scroll", function() {
-            const searchFilter = document.getElementById("searchFilter");
-            const currentScrollTop = window.pageYOffset || document.documentElement.scrollTop;
-
-            if (currentScrollTop > lastScrollTop) {
-                // Scrolling down
-                searchFilter.classList.add("hidden");
-            } else {
-                // Scrolling up
-                searchFilter.classList.remove("hidden");
+        document.getElementById("profileModal").addEventListener("click", function(e) {
+            if (e.target === this) {
+                closeProfileModal();
             }
-            lastScrollTop = currentScrollTop <= 0 ? 0 : currentScrollTop;
         });
+
+        if (window.innerWidth > 768) {
+            let lastScrollTop = 0;
+            window.addEventListener("scroll", function() {
+                const searchFilter = document.getElementById("searchFilter");
+                const currentScrollTop = window.pageYOffset || document.documentElement.scrollTop;
+
+                if (currentScrollTop > lastScrollTop) {
+                    searchFilter.classList.add("hidden");
+                } else {
+                    searchFilter.classList.remove("hidden");
+                }
+                lastScrollTop = currentScrollTop <= 0 ? 0 : currentScrollTop;
+            });
+        }
     </script>
 </body>
 </html>
