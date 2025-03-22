@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cusat-Connect - Sign Up</title>
+    <link rel="stylesheet" href="styles.css">
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth.js"></script>
+</head>
+<body>
+    <div class="auth-container">
+        <h1>Sign Up for Cusat-Connect</h1>
+        <button class="google-signin" onclick="signUpWithGoogle()">
+            <i class="fab fa-google"></i> Sign Up with Google
+        </button>
+        <div id="signup-form" class="signup-form" style="display: none;">
+            <div id="form-step-1" class="form-step active">
+                <label>CUSAT Registration Number</label>
+                <input type="text" id="regno" placeholder="Enter your Reg No.">
+                <button onclick="nextStep(1)">Next</button>
+            </div>
+            <div id="form-step-2" class="form-step">
+                <label>Semester</label>
+                <input type="text" id="semester" placeholder="e.g., 5">
+                <button onclick="prevStep(2)">Back</button>
+                <button onclick="nextStep(2)">Next</button>
+            </div>
+            <div id="form-step-3" class="form-step">
+                <label>Department</label>
+                <input type="text" id="department" placeholder="e.g., Computer Science">
+                <button onclick="prevStep(3)">Back</button>
+                <button onclick="completeSignUp()">Finish</button>
+            </div>
+        </div>
+        <p>Already registered? <a href="signin.html">Sign In</a></p>
+    </div>
+    <script src="script.js"></script>
+    <script>
+        const firebaseConfig = {
+            apiKey: "AIzaSyCY7QcrbnkQmMWfbmion01PAsu5_s5GUrM",
+            authDomain: "cusat-connect-50e90.firebaseapp.com",
+            projectId: "cusat-connect-50e90",
+            storageBucket: "cusat-connect-50e90.firebasestorage.app",
+            messagingSenderId: "255437667135",
+            appId: "1:255437667135:web:5c0c6216744679c101718a"
+        };
+        firebase.initializeApp(firebaseConfig);
+    </script>
+</body>
+</html>
