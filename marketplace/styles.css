@@ -45,19 +45,6 @@ nav {
     color: #0071e3;
 }
 
-.nav-links a {
-    margin: 0 15px;
-    text-decoration: none;
-    color: #1d1d1f;
-    font-size: 16px;
-    font-weight: 500;
-    transition: color 0.3s ease;
-}
-
-.nav-links a:hover {
-    color: #0071e3;
-}
-
 .profile-icon {
     width: 40px;
     height: 40px;
@@ -166,6 +153,7 @@ nav {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
     gap: 15px;
+    justify-content: center;
 }
 
 .category-card {
@@ -304,51 +292,6 @@ nav {
     color: #1d1d1f;
 }
 
-.new-listing-section {
-    margin-bottom: 30px;
-}
-
-#new-listing-form {
-    background: #fff;
-    border-radius: 16px;
-    padding: 20px;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
-}
-
-#new-listing-form input,
-#new-listing-form textarea,
-#new-listing-form select {
-    width: 100%;
-    padding: 10px;
-    margin-bottom: 15px;
-    border: 1px solid #d2d2d7;
-    border-radius: 8px;
-    font-size: 16px;
-    outline: none;
-}
-
-#new-listing-form textarea {
-    resize: vertical;
-    min-height: 100px;
-}
-
-#new-listing-form button {
-    width: 100%;
-    padding: 12px;
-    background: #0071e3;
-    color: #fff;
-    border: none;
-    border-radius: 12px;
-    font-size: 16px;
-    font-weight: 500;
-    cursor: pointer;
-    transition: background 0.3s ease;
-}
-
-#new-listing-form button:hover {
-    background: #005bb5;
-}
-
 .modal {
     display: none;
     position: fixed;
@@ -422,7 +365,6 @@ nav {
     font-size: 16px;
 }
 
-/* Additional styles for Buy button and messages (not in your CSS yet) */
 #buy-now-btn {
     background-color: #0071e3;
     color: #fff;
@@ -451,15 +393,4 @@ nav {
     padding: 15px;
     margin-bottom: 15px;
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
-}
-
-.purchased-items-section {
-    margin-top: 30px;
-}
-
-.purchased-items-section h3 {
-    font-size: 24px;
-    font-weight: 600;
-    margin-bottom: 20px;
-    color: #1d1d1f;
 }
