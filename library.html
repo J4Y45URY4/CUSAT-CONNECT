@@ -1,0 +1,1117 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Library Seat Booking</title>
+    <style>
+        /* General Styles */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background-color: #f5f7fa;
+            color: #333;
+            line-height: 1.6;
+            overflow-x: hidden; /* Remove horizontal scrollbar */
+        }
+
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        h1, h2, h3 {
+            color: #2c3e50;
+            margin-bottom: 15px;
+        }
+
+        /* Navigation Bar */
+        .nav-bar {
+            background-color: #2c3e50;
+            color: white;
+            display: flex;
+            padding: 0;
+            margin-bottom: 20px;
+            border-radius: 8px;
+            overflow: hidden;
+        }
+
+        .nav-item {
+            padding: 15px 25px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+            text-align: center;
+            flex: 1;
+        }
+
+        .nav-item:hover {
+            background-color: #34495e;
+        }
+
+        .nav-item.active {
+            background-color: #3498db;
+            font-weight: bold;
+        }
+
+        /* Content Sections */
+        .content-section {
+            background-color: white;
+            border-radius: 10px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+            margin-top: 20px;
+            display: none;
+        }
+
+        .content-section.active {
+            display: block;
+        }
+
+        .section-header {
+            background-color: #3498db;
+            color: white;
+            padding: 15px 20px;
+            font-size: 1.4rem;
+        }
+
+        /* User Check-in Controls */
+        .checkin-controls {
+            padding: 30px;
+            text-align: center;
+        }
+
+        .check-in-form {
+            background-color: #f8f9fa;
+            padding: 20px;
+            border-radius: 8px;
+            max-width: 500px;
+            margin: 0 auto;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+            text-align: left;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: bold;
+            color: #2c3e50;
+        }
+
+        button {
+            background-color: #3498db;
+            color: white;
+            border: none;
+            padding: 12px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: background-color 0.3s;
+            margin: 5px;
+        }
+
+        button:hover {
+            background-color: #2980b9;
+        }
+
+        #checkOutBtn {
+            background-color: #e74c3c;
+        }
+
+        #checkOutBtn:hover {
+            background-color: #c0392b;
+        }
+
+        input[type="time"] {
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 16px;
+            width: 100%;
+        }
+
+        #timeDisplay {
+            margin: 15px 0;
+            font-size: 18px;
+            font-weight: bold;
+            color: #34495e;
+        }
+
+        /* Countdown Circle */
+        .countdown-wrapper {
+            padding: 30px;
+            display: flex;
+            justify-content: center;
+        }
+
+        .countdown-circle {
+            width: 200px;
+            height: 200px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            margin: 0 auto;
+            background: conic-gradient(
+                #3498db 0% var(--percentage, 100%), 
+                #f3f3f3 var(--percentage, 100%) 100%
+            );
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        .circle-inner {
+            width: 80%;
+            height: 80%;
+            background-color: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: #2c3e50;
+            box-shadow: inset 0 4px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        /* Active Users List */
+        .active-users-section {
+            padding: 20px;
+        }
+
+        .user-card {
+            display: flex;
+            padding: 15px;
+            margin: 15px 0;
+            border-radius: 8px;
+            background-color: #f8f9fa;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+            align-items: center;
+            position: relative;
+            transition: transform 0.2s;
+        }
+
+        .user-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        }
+
+        .user-avatar {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            margin-right: 15px;
+            object-fit: cover;
+            border: 3px solid #3498db;
+        }
+
+        .user-info {
+            flex: 1;
+        }
+
+        .user-info h3 {
+            margin: 0 0 5px;
+            color: #2c3e50;
+        }
+
+        .user-info p {
+            margin: 5px 0;
+            color: #7f8c8d;
+        }
+
+        .mini-countdown {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            margin-left: 15px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            position: relative;
+            overflow: hidden;
+            background-color: #3498db;
+        }
+
+        .mini-countdown-inner {
+            width: 100%;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.7rem;
+            font-weight: bold;
+            color: white;
+            position: relative;
+            z-index: 2;
+        }
+
+        /* Empty state */
+        .empty-state {
+            text-align: center;
+            padding: 30px;
+            color: #7f8c8d;
+        }
+
+        .empty-state svg {
+            margin-bottom: 15px;
+            color: #bdc3c7;
+        }
+
+        /* Error message */
+        .error-message {
+            color: #e74c3c;
+            font-size: 14px;
+            margin-top: 5px;
+            display: none;
+        }
+
+        /* Success message */
+        .success-message {
+            background-color: #2ecc71;
+            color: white;
+            padding: 15px;
+            border-radius: 5px;
+            margin-bottom: 20px;
+            display: none;
+            text-align: center;
+        }
+
+        /* Seat selection */
+       /* Seat Selection Container */
+/* Seat Selection Container */
+.seat-selection {
+    margin: 20px auto;
+    max-width: 1000px; /* Adjust based on your layout */
+    background-color: #f8f9fa;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    overflow: hidden; /* Prevent overflow */
+}
+
+/* Seat Map */
+.seat-map {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin: 20px 0;
+    position: relative;
+    gap: 15px; /* Add gap between rows */
+}
+
+/* Seat Row */
+.seat-row {
+    display: flex;
+    justify-content: center;
+    flex-wrap: wrap; /* Allow wrapping of seats */
+    gap: 20px; /* Add gap between groups of 5 seats */
+    width: 100%;
+}
+
+/* Seat Group */
+.seat-group {
+    display: flex;
+    gap: 5px; /* Add gap between individual seats */
+}
+
+/* Individual Seat */
+.seat {
+    width: 40px;
+    height: 40px;
+    border-radius: 5px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    background-color: #ecf0f1;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    transition: all 0.2s;
+    color: #2c3e50;
+    font-weight: bold;
+    border: 2px solid transparent;
+}
+
+.seat:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+}
+
+.seat.selected {
+    background-color: #3498db;
+    color: white;
+    border-color: #2980b9;
+}
+
+.seat.occupied {
+    background-color: #e74c3c;
+    color: white;
+    cursor: not-allowed;
+}
+
+/* Library Desk */
+.library-desk {
+    width: 100%;
+    height: 20px;
+    background-color: #95a5a6;
+    margin: 10px 0;
+    border-radius: 3px;
+}
+
+/* Seat Legend */
+.seat-legend {
+    display: flex;
+    justify-content: center;
+    margin-top: 20px;
+    gap: 15px; /* Add gap between legend items */
+}
+
+.legend-item {
+    display: flex;
+    align-items: center;
+}
+
+.legend-color {
+    width: 20px;
+    height: 20px;
+    border-radius: 3px;
+    margin-right: 5px;
+}
+
+.legend-available {
+    background-color: #ecf0f1;
+}
+
+.legend-selected {
+    background-color: #3498db;
+}
+
+.legend-occupied {
+    background-color: #e74c3c;
+}
+
+        /* Checkout time options */
+        .checkout-options {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            margin-bottom: 15px;
+        }
+
+        .checkout-option {
+            padding: 8px 15px;
+            margin: 5px;
+            background-color: #ecf0f1;
+            border-radius: 20px;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-weight: bold;
+        }
+
+        .checkout-option:hover {
+            background-color: #d5dbdb;
+        }
+
+        .checkout-option.selected {
+            background-color: #3498db;
+            color: white;
+        }
+
+        /* Responsive design */
+        @media (max-width: 768px) {
+            .nav-bar {
+                flex-direction: column;
+            }
+            
+            .user-card {
+                flex-direction: column;
+                text-align: center;
+            }
+            
+            .user-avatar {
+                margin-right: 0;
+                margin-bottom: 10px;
+            }
+            
+            .mini-countdown {
+                margin-left: 0;
+                margin-top: 10px;
+            }
+
+            .seat {
+                width: 30px;
+                height: 30px;
+                margin: 3px;
+                font-size: 0.8rem;
+            }
+
+            .checkout-options {
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>College Library</h1>
+        
+        <!-- Navigation Bar -->
+        <div class="nav-bar">
+            <div class="nav-item active" data-section="checkin-section">Check-in/Check-out</div>
+            <div class="nav-item" data-section="users-section">Active Users</div>
+        </div>
+        
+        <!-- Success Message -->
+        <div id="successMessage" class="success-message"></div>
+        
+        <!-- Check-in Section -->
+        <div id="checkin-section" class="content-section active">
+            <h2 class="section-header">Library Check-in System</h2>
+            
+            <div class="checkin-controls">
+                <!-- Not checked in state -->
+                <div id="notCheckedInState">
+                    <div class="check-in-form">
+                        <h3>Check In to Library</h3>
+                        
+                        <!-- Seat Selection -->
+                        <div class="form-group">
+                            <label>Select your seat:</label>
+                            <div class="seat-selection">
+                                <label>Select your seat:</label>
+                                <div class="seat-map">
+                                    <!-- First row of seats (20 seats) -->
+                                    <div class="seat-row" id="row1"></div>
+                                    
+                                    <!-- Library desk -->
+                                    <div class="library-desk"></div>
+                                    
+                                    <!-- Second row of seats (20 seats) -->
+                                    <div class="seat-row" id="row2"></div>
+                                </div>
+                                
+                                <!-- Seat Legend -->
+                                <div class="seat-legend">
+                                    <div class="legend-item">
+                                        <div class="legend-color legend-available"></div>
+                                        <span>Available</span>
+                                    </div>
+                                    <div class="legend-item">
+                                        <div class="legend-color legend-selected"></div>
+                                        <span>Selected</span>
+                                    </div>
+                                    <div class="legend-item">
+                                        <div class="legend-color legend-occupied"></div>
+                                        <span>Occupied</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <p class="error-message" id="seatError">Please select a seat</p>
+                        </div>
+                        
+                        <!-- Checkout Time Selection -->
+                        <div class="form-group">
+                            <label>Select your check-out time:</label>
+                            <div class="checkout-options">
+                                <div class="checkout-option" data-hours="2">2 Hours</div>
+                                <div class="checkout-option" data-hours="4">4 Hours</div>
+                                <div class="checkout-option" data-hours="6">6 Hours</div>
+                                <div class="checkout-option" data-hours="8">8 Hours</div>
+                                <div class="checkout-option" data-hours="10">10 Hours</div>
+                                <div class="checkout-option" data-hours="12">12 Hours</div>
+                            </div>
+                            <p class="error-message" id="timeError">Please select a checkout time</p>
+                        </div>
+                        
+                        <button id="checkInBtn">Check In Now</button>
+                    </div>
+                </div>
+                
+                <!-- Checked in state -->
+                <div id="checkedInState" style="display:none;">
+                    <div id="timeDisplay"></div>
+                    
+                    <!-- Seat info display -->
+                    <div id="seatDisplay" style="margin-bottom: 15px; font-size: 18px;"></div>
+                    
+                    <!-- Countdown Circle -->
+                    <div class="countdown-wrapper">
+                        <div id="countdownCircle" class="countdown-circle">
+                            <div class="circle-inner">
+                                <span id="countdownText">0h 0m 0s</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <button id="checkOutBtn">Check Out Now</button>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Active Users Section -->
+        <div id="users-section" class="content-section">
+            <h2 class="section-header">Users Currently in Library</h2>
+            
+            <div class="active-users-section">
+                <div id="activeUsersList">
+                    <!-- User cards will be dynamically added here -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Firebase Integration -->
+    <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-firestore-compat.js"></script>
+    <script>
+        // Firebase configuration
+        const firebaseConfig = {
+  apiKey: "AIzaSyCY7QcrbnkQmMWfbmion01PAsu5_s5GUrM",
+  authDomain: "cusat-connect-50e90.firebaseapp.com",
+  databaseURL: "https://cusat-connect-50e90-default-rtdb.firebaseio.com",
+  projectId: "cusat-connect-50e90",
+  storageBucket: "cusat-connect-50e90.firebasestorage.app",
+  messagingSenderId: "255437667135",
+  appId: "1:255437667135:web:5c0c6216744679c101718a"
+};
+
+        // Initialize Firebase
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.firestore();
+
+        // Mock current user data (replace with actual user data from your auth system)
+        const currentUser = {
+            id: "user123",
+            username: "John Doe",
+            profilePic: "https://via.placeholder.com/100"
+        };
+
+        // Library Check-in Class
+        class LibraryCheckIn {
+            constructor() {
+                this.checkInTime = null;
+                this.checkOutTime = null;
+                this.isCheckedIn = false;
+                this.selectedSeat = null;
+                this.timeLeftInterval = null;
+                this.selectedDuration = null;
+                
+                // Load existing check-in data if it exists
+                this.loadCheckInData();
+            }
+            
+            // Load check-in data if the user is already checked in
+            loadCheckInData() {
+                const savedData = localStorage.getItem('libraryCheckIn_' + currentUser.id);
+                if (savedData) {
+                    const data = JSON.parse(savedData);
+                    this.checkInTime = new Date(data.checkInTime);
+                    this.checkOutTime = new Date(data.checkOutTime);
+                    this.selectedSeat = data.seatNumber;
+                    this.isCheckedIn = true;
+                    
+                    // Check if the check-out time is in the future
+                    if (this.checkOutTime > new Date()) {
+                        this.startCountdown();
+                        this.updateCheckInUI();
+                    } else {
+                        // Auto check-out if time has passed
+                        this.checkOut();
+                    }
+                }
+            }
+
+            // Check in user to library
+            checkIn() {
+                if (!this.isCheckedIn) {
+                    const seatError = document.getElementById('seatError');
+                    const timeError = document.getElementById('timeError');
+                    
+                    // Validate seat selection
+                    if (!seatMap.selectedSeat) {
+                        seatError.style.display = 'block';
+                        return false;
+                    }
+                    seatError.style.display = 'none';
+                    
+                    // Validate checkout time
+                    if (!this.selectedDuration) {
+                        timeError.style.display = 'block';
+                        return false;
+                    }
+                    timeError.style.display = 'none';
+                    
+                    this.checkInTime = new Date();
+                    
+                    // Calculate check-out time based on selected duration
+                    this.checkOutTime = new Date(this.checkInTime);
+                    this.checkOutTime.setHours(this.checkOutTime.getHours() + parseInt(this.selectedDuration));
+                    
+                    this.isCheckedIn = true;
+                    this.selectedSeat = seatMap.selectedSeat;
+                    
+                    // Show success message
+                    this.showSuccessMessage();
+                    
+                    // Save data
+                    this.saveCheckInData();
+                    
+                    // Start countdown timer
+                    this.startCountdown();
+                    
+                    // Update UI
+                    this.updateCheckInUI();
+                    
+                    return true;
+                }
+                return false;
+            }
+
+            // Show success check-in message
+            showSuccessMessage() {
+                const successMessage = document.getElementById('successMessage');
+                successMessage.textContent = `${currentUser.username} successfully checked in!`;
+                successMessage.style.display = 'block';
+                
+                // Hide message after 5 seconds
+                setTimeout(() => {
+                    successMessage.style.display = 'none';
+                }, 5000);
+            }
+
+            // Check out user from library
+            checkOut() {
+                if (this.isCheckedIn) {
+                    this.isCheckedIn = false;
+                    clearInterval(this.timeLeftInterval);
+                    
+                    // Send to server
+                    this.deleteCheckInData();
+                    
+                    // Update UI
+                    this.updateCheckOutUI();
+                    
+                    // Show success message
+                    const successMessage = document.getElementById('successMessage');
+                    successMessage.textContent = `${currentUser.username} successfully checked out!`;
+                    successMessage.style.display = 'block';
+                    
+                    // Hide message after 5 seconds
+                    setTimeout(() => {
+                        successMessage.style.display = 'none';
+                    }, 5000);
+                }
+            }
+
+            // Start countdown timer
+            startCountdown() {
+                if (this.timeLeftInterval) {
+                    clearInterval(this.timeLeftInterval);
+                }
+                
+                this.timeLeftInterval = setInterval(() => {
+                    const now = new Date();
+                    const timeLeft = this.checkOutTime - now;
+                    
+                    if (timeLeft <= 0) {
+                        // Time's up
+                        clearInterval(this.timeLeftInterval);
+                        this.checkOut();
+                        return;
+                    }
+                    
+                    // Update countdown circle UI
+                    this.updateCountdownUI(timeLeft);
+                }, 1000);
+            }
+
+            
+saveCheckInData() {
+    const checkInData = {
+        userId: currentUser.id,
+        username: currentUser.username,
+        profilePic: currentUser.profilePic,
+        checkInTime: this.checkInTime,
+        checkOutTime: this.checkOutTime,
+        seatNumber: this.selectedSeat
+    };
+    
+    // Save to Firestore
+    db.collection('bookings').add(checkInData)
+        .then(() => {
+            // Update occupied seats
+            this.updateOccupiedSeats();
+            
+            // Refresh active users list
+            activeUsersList.fetchActiveUsers();
+        })
+        .catch((error) => {
+            console.error("Error saving check-in data: ", error);
+        });
+
+        // You should add this:
+localStorage.setItem('libraryCheckIn_' + currentUser.id, JSON.stringify({
+    checkInTime: this.checkInTime,
+    checkOutTime: this.checkOutTime,
+    seatNumber: this.selectedSeat
+}));
+}
+
+            // Delete check-in data from server
+            deleteCheckInData() {
+                db.collection('bookings').where('userId', '==', currentUser.id).get()
+                    .then((querySnapshot) => {
+                        querySnapshot.forEach((doc) => {
+                            doc.ref.delete();
+                        });
+                        
+                        // Update occupied seats
+                        this.updateOccupiedSeats();
+                        
+                        // Refresh active users list
+                        activeUsersList.fetchActiveUsers();
+                    })
+                    .catch((error) => {
+                        console.error("Error deleting check-in data: ", error);
+                    });
+            }
+
+            // Update occupied seats
+            updateOccupiedSeats() {
+                db.collection('bookings').get()
+                    .then((querySnapshot) => {
+                        const occupiedSeats = [];
+                        querySnapshot.forEach((doc) => {
+                            occupiedSeats.push(doc.data().seatNumber);
+                        });
+                        
+                        // Save to localStorage
+                        localStorage.setItem('libraryOccupiedSeats', JSON.stringify(occupiedSeats));
+                        
+                        // Refresh seat map
+                        seatMap.renderSeats();
+                    })
+                    .catch((error) => {
+                        console.error("Error fetching occupied seats: ", error);
+                    });
+            }
+
+            // Update UI after check-in
+            updateCheckInUI() {
+                document.getElementById('notCheckedInState').style.display = 'none';
+                document.getElementById('checkedInState').style.display = 'block';
+                
+                const timeDisplay = document.getElementById('timeDisplay');
+                timeDisplay.innerHTML = `
+                    <p>Checked in at: ${this.formatTime(this.checkInTime)}</p>
+                    <p>Check out by: ${this.formatTime(this.checkOutTime)}</p>
+                `;
+                
+                const seatDisplay = document.getElementById('seatDisplay');
+                seatDisplay.innerHTML = `<p>Your seat: <strong>${this.selectedSeat}</strong></p>`;
+            }
+
+            // Update UI after check-out
+            updateCheckOutUI() {
+                document.getElementById('notCheckedInState').style.display = 'block';
+                document.getElementById('checkedInState').style.display = 'none';
+                
+                // Reset checkout option selection
+                document.querySelectorAll('.checkout-option').forEach(option => {
+                    option.classList.remove('selected');
+                });
+                
+                // Reset seat selection
+                seatMap.selectedSeat = null;
+                this.selectedDuration = null;
+                seatMap.renderSeats();
+            }
+
+            // Update countdown circle UI
+            updateCountdownUI(timeLeftMs) {
+                const countdownCircle = document.getElementById('countdownCircle');
+                const countdownText = document.getElementById('countdownText');
+                
+                // Calculate time in hours, minutes, seconds
+                const hours = Math.floor(timeLeftMs / (1000 * 60 * 60));
+                const minutes = Math.floor((timeLeftMs % (1000 * 60 * 60)) / (1000 * 60));
+                const seconds = Math.floor((timeLeftMs % (1000 * 60)) / 1000);
+                
+                // Calculate total duration in seconds (from check-in to check-out)
+                const totalDurationSeconds = (this.checkOutTime - this.checkInTime) / 1000;
+                const remainingSeconds = timeLeftMs / 1000;
+                
+                // Calculate percentage for circle
+                const percentage = (remainingSeconds / totalDurationSeconds) * 100;
+                
+                // Update circle progress (using CSS variable for the percentage)
+                countdownCircle.style.setProperty('--percentage', percentage + '%');
+                
+                // Update countdown text
+                countdownText.textContent = `${hours}h ${minutes}m ${seconds}s`;
+            }
+
+            // Format time for display
+            formatTime(date) {
+                return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+            }
+        }
+
+        class SeatMap {
+    constructor() {
+        this.totalSeats = 40; // 20 seats in the first row, 20 in the second row
+        this.seatsPerRow = 20; // Each row has 20 seats
+        this.selectedSeat = null;
+        this.occupiedSeats = [];
+    }
+    
+    // Initialize seat map
+    init() {
+        this.loadOccupiedSeats();
+        this.renderSeats();
+        this.addEventListeners();
+    }
+    
+    // Load occupied seats from localStorage
+    loadOccupiedSeats() {
+        this.occupiedSeats = JSON.parse(localStorage.getItem('libraryOccupiedSeats') || '[]');
+    }
+    
+    // Render seat map
+    renderSeats() {
+        // Load latest occupied seats
+        this.loadOccupiedSeats();
+        
+        // Clear existing seats
+        document.getElementById('row1').innerHTML = '';
+        document.getElementById('row2').innerHTML = '';
+        
+        // Create seats for row 1 (20 seats)
+        this.renderSeatRow('row1', 1, 20);
+        
+        // Create seats for row 2 (20 seats)
+        this.renderSeatRow('row2', 21, 40);
+    }
+    
+    // Render a row of seats
+    renderSeatRow(rowId, startSeat, endSeat) {
+        const row = document.getElementById(rowId);
+        
+        // Calculate number of groups of 5 seats
+        const numGroups = Math.ceil((endSeat - startSeat + 1) / 5);
+        
+        for (let group = 0; group < numGroups; group++) {
+            const seatGroup = document.createElement('div');
+            seatGroup.className = 'seat-group';
+            
+            // For each group, create 5 seats (or fewer for the last group)
+            const groupStartSeat = startSeat + (group * 10);
+            const groupEndSeat = Math.min(groupStartSeat + 9, endSeat);
+            
+            for (let seatNum = groupStartSeat; seatNum <= groupEndSeat; seatNum++) {
+                const seat = document.createElement('div');
+                seat.className = 'seat';
+                seat.dataset.seatNumber = seatNum;
+                seat.textContent = seatNum;
+                
+                // Check if seat is occupied
+                if (this.occupiedSeats.includes(seatNum.toString())) {
+                    seat.classList.add('occupied');
+                }
+                
+                // Check if seat is selected
+                if (seatNum.toString() === this.selectedSeat) {
+                    seat.classList.add('selected');
+                }
+                
+                seatGroup.appendChild(seat);
+            }
+            
+            row.appendChild(seatGroup);
+        }
+    }
+    
+    // Add event listeners to seats
+    addEventListeners() {
+        // Use event delegation
+        document.addEventListener('click', (e) => {
+            if (e.target.classList.contains('seat') && !e.target.classList.contains('occupied')) {
+                // Deselect previously selected seat
+                const prevSelected = document.querySelector(`.seat.selected`);
+                if (prevSelected) {
+                    prevSelected.classList.remove('selected');
+                }
+                
+                // Select new seat
+                this.selectedSeat = e.target.dataset.seatNumber;
+                e.target.classList.add('selected');
+            }
+        });
+    }
+}
+
+        // Active Users List Component
+        class ActiveUsersList {
+            constructor() {
+                this.users = [];
+                this.updateInterval = null;
+            }
+
+            // Start fetching active users
+            init() {
+                this.fetchActiveUsers();
+                
+                // Update every 30 seconds
+                this.updateInterval = setInterval(() => {
+                    this.fetchActiveUsers();
+                }, 30000);
+            }
+
+            // Fetch active users from server
+            fetchActiveUsers() {
+                db.collection('bookings').get()
+                    .then((querySnapshot) => {
+                        this.users = [];
+                        querySnapshot.forEach((doc) => {
+                            const userData = doc.data();
+                            if (new Date(userData.checkOutTime) > new Date()) {
+                                this.users.push(userData);
+                            }
+                        });
+                        
+                        // Render users list
+                        this.renderUsersList();
+                    })
+                    .catch((error) => {
+                        console.error("Error fetching active users: ", error);
+                    });
+            }
+
+            // Render users list to UI
+            renderUsersList() {
+                const usersContainer = document.getElementById('activeUsersList');
+                usersContainer.innerHTML = '';
+                
+                if (this.users.length === 0) {
+                    usersContainer.innerHTML = `
+                        <div class="empty-state">
+                            <svg width="50" height="50" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-users"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>
+                            <p>No active users in the library</p>
+                        </div>
+                    `;
+                    return;
+                }
+                
+                this.users.forEach(user => {
+                    const userCard = document.createElement('div');
+                    userCard.className = 'user-card';
+                    
+                    const timeLeft = new Date(user.checkOutTime) - new Date();
+                    const hoursLeft = Math.floor(timeLeft / (1000 * 60 * 60));
+                    const minutesLeft = Math.floor((timeLeft % (1000 * 60 * 60)) / (1000 * 60));
+                    const secondsLeft = Math.floor((timeLeft % (1000 * 60)) / 1000);
+                    
+                    userCard.innerHTML = `
+                        <img src="${user.profilePic}" alt="${user.username}" class="user-avatar">
+                        <div class="user-info">
+                            <h3>${user.username}</h3>
+                            <p>Seat: ${user.seatNumber}</p>
+                            <p>Check out by: ${this.formatTime(new Date(user.checkOutTime))}</p>
+                        </div>
+                        <div class="mini-countdown" style="background-color: ${this.getCountdownColor(timeLeft)};">
+                            <div class="mini-countdown-inner">
+                                ${hoursLeft}h ${minutesLeft}m
+                            </div>
+                        </div>
+                    `;
+                    
+                    usersContainer.appendChild(userCard);
+                });
+            }
+
+            // Format time for display
+            formatTime(date) {
+                return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+            }
+
+            // Get countdown color based on time left
+            getCountdownColor(timeLeft) {
+                const hoursLeft = timeLeft / (1000 * 60 * 60);
+                
+                if (hoursLeft > 4) {
+                    return '#2ecc71'; // Green
+                } else if (hoursLeft > 2) {
+                    return '#f1c40f'; // Yellow
+                } else {
+                    return '#e74c3c'; // Red
+                }
+            }
+        }
+
+        // Initialize components
+        const libraryCheckIn = new LibraryCheckIn();
+        const seatMap = new SeatMap();
+        const activeUsersList = new ActiveUsersList();
+
+        // Initialize seat map and active users list
+        seatMap.init();
+        activeUsersList.init();
+
+        // Event listeners for navigation
+        document.querySelectorAll('.nav-item').forEach(item => {
+            item.addEventListener('click', () => {
+                // Remove active class from all items
+                document.querySelectorAll('.nav-item').forEach(navItem => {
+                    navItem.classList.remove('active');
+                });
+                
+                // Add active class to clicked item
+                item.classList.add('active');
+                
+                // Hide all content sections
+                document.querySelectorAll('.content-section').forEach(section => {
+                    section.style.display = 'none';
+                });
+                
+                // Show the selected content section
+                const sectionId = item.getAttribute('data-section');
+                document.getElementById(sectionId).style.display = 'block';
+            });
+        });
+
+        // Event listener for check-in button
+        document.getElementById('checkInBtn').addEventListener('click', () => {
+            libraryCheckIn.checkIn();
+        });
+
+        // Event listener for check-out button
+        document.getElementById('checkOutBtn').addEventListener('click', () => {
+            libraryCheckIn.checkOut();
+        });
+
+        // Event listeners for checkout time options
+        document.querySelectorAll('.checkout-option').forEach(option => {
+            option.addEventListener('click', () => {
+                // Remove selected class from all options
+                document.querySelectorAll('.checkout-option').forEach(opt => {
+                    opt.classList.remove('selected');
+                });
+                
+                // Add selected class to clicked option
+                option.classList.add('selected');
+                
+                // Set selected duration
+                libraryCheckIn.selectedDuration = option.getAttribute('data-hours');
+            });
+        });
+    </script>
+</body>
+</html>
