@@ -4,7 +4,7 @@ const AIRTABLE_BASE_ID = 'appAN1TbPo89WT3mA';
 const AIRTABLE_EVENTS_TABLE = 'Events';
 const AIRTABLE_USERS_TABLE = 'Users';
 
-// User data object to store fetched profile
+// User data object
 let user = {
     skills: [],
     interests: [],
@@ -13,16 +13,14 @@ let user = {
 };
 
 let aiToggled = false;
-let eventGridContent = '';
+let eventsData = []; // Store events globally to avoid refetching
 
 // Fetch user profile from Airtable
 async function loadUserProfile(uid) {
     try {
         const response = await fetch(
             `https://api.airtable.com/v0/${AIRTABLE_BASE_ID}/${AIRTABLE_USERS_TABLE}?filterByFormula={UID}="${uid}"`,
-            {
-                headers: { Authorization: `Bearer ${AIRTABLE_PAT}` }
-            }
+            { headers: { Authorization: `Bearer ${AIRTABLE_PAT}` } }
         );
         if (!response.ok) throw new Error(`HTTP error! Status: ${response.status}`);
         const data = await response.json();
@@ -30,8 +28,6 @@ async function loadUserProfile(uid) {
             const record = data.records[0].fields;
             user = {
                 name: record.Name || 'N/A',
-                email: record.Email || 'N/A',
-                regno: record.RegNo || 'N/A',
                 semester: record.Semester || 'N/A',
                 department: record.Department || 'N/A',
                 skills: record.Skills ? record.Skills.split(', ') : [],
@@ -41,82 +37,85 @@ async function loadUserProfile(uid) {
             };
             updateUserCard();
             updateProfileModal();
-            updateModalLists();
+        } else {
+            throw new Error('No user record found');
         }
     } catch (error) {
         console.error('Error fetching user profile:', error);
-        document.getElementById('user-name').textContent = 'Error loading profile';
+        updateUserCardWithError('Failed to load profile');
+        updateProfileModalWithError('Failed to load profile');
     }
 }
 
-// Update user card with fetched data
+// Update user card
 function updateUserCard() {
     document.getElementById('user-name').textContent = user.name;
     document.getElementById('user-details').textContent = `${user.department}, Semester ${user.semester}`;
-    document.getElementById('user-email').textContent = user.email;
-    document.getElementById('user-regno').textContent = user.regno;
-    document.getElementById('skillsList').innerHTML = user.skills.map(skill => `<span>${skill}</span>`).join('');
-    document.getElementById('interestsList').innerHTML = user.interests.map(interest => `<span>${interest}</span>`).join('');
-    document.getElementById('aspireList').innerHTML = user.aspire.map(aspire => `<span>${aspire}</span>`).join('');
+    document.getElementById('skillsList').innerHTML = user.skills.length ? user.skills.map(skill => `<span>${skill}</span>`).join('') : '<span>No skills</span>';
+    document.getElementById('interestsList').innerHTML = user.interests.length ? user.interests.map(interest => `<span>${interest}</span>`).join('') : '<span>No interests</span>';
+    document.getElementById('aspireList').innerHTML = user.aspire.length ? user.aspire.map(aspire => `<span>${aspire}</span>`).join('') : '<span>No aspiration</span>';
 }
 
-// Fetch events from Airtable (Reverted to Old Code)
+function updateUserCardWithError(message) {
+    document.getElementById('user-name').textContent = message;
+    document.getElementById('user-details').textContent = '';
+    document.getElementById('skillsList').innerHTML = '';
+    document.getElementById('interestsList').innerHTML = '';
+    document.getElementById('aspireList').innerHTML = '';
+}
+
+// Fetch events from Airtable
 async function fetchEventsFromAirtable() {
     try {
         const response = await fetch(
             `https://api.airtable.com/v0/${AIRTABLE_BASE_ID}/${AIRTABLE_EVENTS_TABLE}`,
-            {
-                headers: {
-                    Authorization: `Bearer ${AIRTABLE_PAT}`
-                }
-            }
+            { headers: { Authorization: `Bearer ${AIRTABLE_PAT}` } }
         );
         if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
         const data = await response.json();
-        const records = data.records;
-
-        const eventGrid = document.getElementById("eventGrid");
-        eventGrid.innerHTML = '';
-
-        records.forEach(record => {
-            const fields = record.fields;
-            const name = fields.Name || 'Untitled Event';
-            const date = fields.Date || 'No Date';
-            const description = fields.Description || 'No Description';
-            const location = fields.Location || 'No Location';
-            const keywords = fields.keywords ? (Array.isArray(fields.keywords) ? fields.keywords : fields.keywords.split(',')) : [];
-
-            const eventCard = `
-                <div class="event-card visible" data-category="${keywords.join(' ').toLowerCase()}" style="background-image: url('https://png.pngtree.com/background/20220714/original/pngtree-vector-technology-circle-and-technical-background-picture-image_1613793.jpg')">
-                    <div class="gradient-overlay"></div>
-                    <div class="overlay">
-                        <h3>${name}</h3>
-                        <p>${date}</p>
-                        <div class="keywords">
-                            ${keywords.map(keyword => `<span>${keyword.trim()}</span>`).join('')}
-                        </div>
-                        <a href="#" class="know-more">Know More</a>
-                    </div>
-                </div>
-            `;
-            eventGrid.innerHTML += eventCard;
-        });
-
-        eventGridContent = eventGrid.innerHTML;
-        updateCategoryFilter(records);
+        eventsData = data.records.map(record => ({
+            name: record.fields.Name || 'Untitled Event',
+            date: record.fields.Date || 'No Date',
+            keywords: record.fields.keywords ? (Array.isArray(record.fields.keywords) ? record.fields.keywords : record.fields.keywords.split(',')) : [],
+            image: record.fields.Image && record.fields.Image[0] ? record.fields.Image[0].url : 'https://via.placeholder.com/300x140',
+            link: record.fields.Link || '#'
+        }));
+        renderEvents();
+        updateCategoryFilter();
     } catch (error) {
         console.error('Error fetching Airtable data:', error);
-        document.getElementById("eventGrid").innerHTML = '<p>Failed to load events. Please check your Personal Access Token and try again later.</p>';
+        document.getElementById("eventGrid").innerHTML = '<p>Failed to load events. Please try again later.</p>';
     }
 }
 
-// Update category filter dynamically (Reverted to Old Code)
-function updateCategoryFilter(records) {
+// Render events
+function renderEvents() {
+    const eventGrid = document.getElementById("eventGrid");
+    eventGrid.innerHTML = '';
+    eventsData.forEach(event => {
+        const eventCard = `
+            <div class="event-card visible" data-category="${event.keywords.join(' ').toLowerCase()}">
+                <img class="event-image" src="${event.image}" alt="${event.name}">
+                <div class="event-content">
+                    <h3 class="event-title">${event.name}</h3>
+                    <div class="event-date"><i class="fas fa-calendar-alt"></i>${event.date}</div>
+                    <div class="event-keywords">
+                        ${event.keywords.map(keyword => `<span>${keyword.trim()}</span>`).join('')}
+                    </div>
+                    <a href="${event.link}" target="_blank" class="know-more">Know More</a>
+                </div>
+            </div>
+        `;
+        eventGrid.innerHTML += eventCard;
+    });
+}
+
+// Update category filter dynamically
+function updateCategoryFilter() {
     const categoryFilter = document.getElementById("categoryFilter");
     const allKeywords = new Set();
-    records.forEach(record => {
-        const keywords = record.fields.keywords ? (Array.isArray(record.fields.keywords) ? record.fields.keywords : record.fields.keywords.split(',')) : [];
-        keywords.forEach(keyword => allKeywords.add(keyword.trim().toLowerCase()));
+    eventsData.forEach(event => {
+        event.keywords.forEach(keyword => allKeywords.add(keyword.trim().toLowerCase()));
     });
 
     categoryFilter.innerHTML = `<li data-category="all" class="active" tabindex="0" aria-label="All Categories">All</li>`;
@@ -141,12 +140,11 @@ function filterEvents() {
     const eventCards = document.querySelectorAll(".event-card");
 
     eventCards.forEach(card => {
-        const title = card.querySelector("h3").textContent.toLowerCase();
-        const description = card.querySelector("p:not(.keywords)").textContent.toLowerCase();
-        const keywords = card.querySelector(".keywords").textContent.toLowerCase();
+        const title = card.querySelector(".event-title").textContent.toLowerCase();
+        const keywords = card.querySelector(".event-keywords").textContent.toLowerCase();
 
-        if (title.includes(searchValue) || description.includes(searchValue) || keywords.includes(searchValue)) {
-            card.style.display = "block";
+        if (title.includes(searchValue) || keywords.includes(searchValue)) {
+            card.style.display = "flex";
             card.classList.add("visible");
         } else {
             card.style.display = "none";
@@ -169,7 +167,7 @@ document.getElementById("categoryFilter").addEventListener("click", function(e) 
         eventCards.forEach(card => {
             const cardCategory = card.getAttribute("data-category");
             if (category === "all" || cardCategory.includes(category)) {
-                card.style.display = "block";
+                card.style.display = "flex";
                 card.classList.add("visible");
             } else {
                 card.style.display = "none";
@@ -190,9 +188,8 @@ function switchTab(tab) {
     document.querySelectorAll(".tab-content").forEach(content => content.classList.remove("active"));
     document.getElementById(`${tab}Tab`).classList.add("active");
 
-    if (tab === "events") {
-        document.getElementById("eventGrid").innerHTML = eventGridContent;
-        document.querySelectorAll(".event-card").forEach(card => card.classList.add("visible"));
+    if (tab === "events" && eventsData.length > 0) {
+        renderEvents(); // Re-render events instead of using cached HTML
     }
 }
 
@@ -207,7 +204,7 @@ document.querySelectorAll(".tabs div").forEach(item => {
 function personalizeSuggestions() {
     const eventCards = document.querySelectorAll(".event-card");
     eventCards.forEach(card => {
-        const keywords = card.querySelector(".keywords").textContent.toLowerCase();
+        const keywords = card.querySelector(".event-keywords").textContent.toLowerCase();
         const skillMatch = user.skills.some(skill => keywords.includes(skill.toLowerCase()));
         const goalMatch = keywords.includes(user.careerGoal.toLowerCase());
 
@@ -246,19 +243,6 @@ function untoggleAI() {
 }
 
 // Modal functions
-function openEditModal() {
-    document.getElementById("editModal").style.display = "flex";
-}
-
-function openEditModalFromProfile() {
-    closeProfileModal();
-    openEditModal();
-}
-
-function closeModal() {
-    document.getElementById("editModal").style.display = "none";
-}
-
 function openProfileModal() {
     document.getElementById("profileModal").style.display = "flex";
 }
@@ -267,97 +251,20 @@ function closeProfileModal() {
     document.getElementById("profileModal").style.display = "none";
 }
 
-function addItem(type, selectElement) {
-    const value = selectElement.value;
-    if (!value) return;
-
-    if (type === "aspire" && user[type].length >= 1) {
-        alert("You can only have one aspiration.");
-        return;
-    }
-
-    if (!user[type].includes(value)) {
-        if (type === "aspire") user[type] = [value];
-        else user[type].push(value);
-        updateModalLists();
-        updateUserCard();
-        updateProfileModal();
-    }
-    selectElement.value = "";
-}
-
-function removeItem(type, item) {
-    user[type] = user[type].filter(i => i !== item);
-    updateModalLists();
-    updateUserCard();
-    updateProfileModal();
-}
-
-function updateModalLists() {
-    document.getElementById("modalSkillsList").innerHTML = user.skills.map(item => `
-        <span>${item}<i class="fas fa-times" onclick="removeItem('skills', '${item}')"></i></span>
-    `).join("");
-    document.getElementById("modalInterestsList").innerHTML = user.interests.map(item => `
-        <span>${item}<i class="fas fa-times" onclick="removeItem('interests', '${item}')"></i></span>
-    `).join("");
-    document.getElementById("modalAspireList").innerHTML = user.aspire.map(item => `
-        <span>${item}<i class="fas fa-times" onclick="removeItem('aspire', '${item}')"></i></span>
-    `).join("");
-}
-
 function updateProfileModal() {
     document.getElementById("profileModal-name").textContent = user.name;
     document.getElementById("profileModal-details").textContent = `${user.department}, Semester ${user.semester}`;
-    document.getElementById("profileModal-email").textContent = user.email;
-    document.getElementById("profileModal-regno").textContent = user.regno;
-    document.getElementById("profileSkillsList").innerHTML = user.skills.map(skill => `<span>${skill}</span>`).join("");
-    document.getElementById("profileInterestsList").innerHTML = user.interests.map(interest => `<span>${interest}</span>`).join("");
-    document.getElementById("profileAspireList").innerHTML = user.aspire.map(aspire => `<span>${aspire}</span>`).join("");
+    document.getElementById("profileSkillsList").innerHTML = user.skills.length ? user.skills.map(skill => `<span>${skill}</span>`).join("") : '<span>No skills</span>';
+    document.getElementById("profileInterestsList").innerHTML = user.interests.length ? user.interests.map(interest => `<span>${interest}</span>`).join("") : '<span>No interests</span>';
+    document.getElementById("profileAspireList").innerHTML = user.aspire.length ? user.aspire.map(aspire => `<span>${aspire}</span>`).join("") : '<span>No aspiration</span>';
 }
 
-function saveProfile() {
-    const uid = localStorage.getItem('uid');
-    const userData = {
-        fields: {
-            UID: uid,
-            Name: user.name,
-            RegNo: user.regno,
-            Email: user.email,
-            Semester: user.semester,
-            Department: user.department,
-            Skills: user.skills.join(', '),
-            Interests: user.interests.join(', '),
-            Passion: user.aspire[0] || ''
-        }
-    };
-
-    fetch(`https://api.airtable.com/v0/${AIRTABLE_BASE_ID}/${AIRTABLE_USERS_TABLE}`, {
-        method: 'PATCH',
-        headers: {
-            Authorization: `Bearer ${AIRTABLE_PAT}`,
-            'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({ records: [{ id: getRecordId(uid), fields: userData.fields }] })
-    })
-    .then(response => {
-        if (!response.ok) throw new Error(`Update failed: ${response.status}`);
-        return response.json();
-    })
-    .then(() => {
-        updateUserCard();
-        updateProfileModal();
-        closeModal();
-    })
-    .catch(error => console.error('Error updating profile:', error));
-}
-
-async function getRecordId(uid) {
-    const response = await fetch(
-        `https://api.airtable.com/v0/${AIRTABLE_BASE_ID}/${AIRTABLE_USERS_TABLE}?filterByFormula={UID}="${uid}"`,
-        { headers: { Authorization: `Bearer ${AIRTABLE_PAT}` } }
-    );
-    const data = await response.json();
-    return data.records[0].id;
+function updateProfileModalWithError(message) {
+    document.getElementById("profileModal-name").textContent = message;
+    document.getElementById("profileModal-details").textContent = '';
+    document.getElementById("profileSkillsList").innerHTML = '';
+    document.getElementById("profileInterestsList").innerHTML = '';
+    document.getElementById("profileAspireList").innerHTML = '';
 }
 
 function debounce(func, wait) {
@@ -373,31 +280,12 @@ function debounce(func, wait) {
 }
 
 // Modal click-to-close
-document.getElementById("editModal").addEventListener("click", function(e) {
-    if (e.target === this) closeModal();
-});
-
 document.getElementById("profileModal").addEventListener("click", function(e) {
     if (e.target === this) closeProfileModal();
 });
 
-// Desktop scroll behavior
-if (window.innerWidth > 768) {
-    let lastScrollTopDesktop = 0;
-    window.addEventListener("scroll", function() {
-        const searchFilter = document.getElementById("searchFilter");
-        const currentScrollTop = window.pageYOffset || document.documentElement.scrollTop;
-
-        if (currentScrollTop > lastScrollTopDesktop) {
-            searchFilter.classList.add("hidden");
-        } else {
-            searchFilter.classList.remove("hidden");
-        }
-        lastScrollTopDesktop = currentScrollTop <= 0 ? 0 : currentScrollTop;
-    });
-}
-
-// Mobile scroll behavior
+// Remove desktop scroll behavior for search filter to avoid conflicts
+// Keep mobile scroll behavior for tabs
 if (window.innerWidth <= 768) {
     let lastScrollTopMobile = 0;
     window.addEventListener("scroll", function() {

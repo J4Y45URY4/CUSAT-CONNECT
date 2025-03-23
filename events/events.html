@@ -13,73 +13,45 @@
     <div class="container">
         <!-- User Card (Visible on Desktop) -->
         <div class="user-card">
-            <h2 id="user-name">Loading...</h2>
-            <div class="details" id="user-details">Loading...</div>
-            <div class="section">
-                <h3>Email</h3>
-                <p id="user-email">Loading...</p>
-            </div>
-            <div class="section">
-                <h3>Reg No</h3>
-                <p id="user-regno">Loading...</p>
-            </div>
+            <h2 id="user-name"></h2>
+            <div class="details" id="user-details"></div>
             <div class="section">
                 <h3>Skills</h3>
-                <div class="keywords" id="skillsList">
-                    <span>Loading...</span>
-                </div>
+                <div class="keywords" id="skillsList"></div>
             </div>
             <div class="section">
                 <h3>Interests</h3>
-                <div class="keywords" id="interestsList">
-                    <span>Loading...</span>
-                </div>
+                <div class="keywords" id="interestsList"></div>
             </div>
             <div class="section">
                 <h3>Aspire to Be</h3>
-                <div class="keywords" id="aspireList">
-                    <span>Loading...</span>
-                </div>
+                <div class="keywords" id="aspireList"></div>
             </div>
         </div>
 
         <!-- Profile Modal (Visible on Mobile) -->
         <div class="modal" id="profileModal">
             <div class="modal-content">
-                <h2 id="profileModal-name">Loading...</h2>
-                <div class="details" id="profileModal-details">Loading...</div>
-                <div class="section">
-                    <h3>Email</h3>
-                    <p id="profileModal-email">Loading...</p>
-                </div>
-                <div class="section">
-                    <h3>Reg No</h3>
-                    <p id="profileModal-regno">Loading...</p>
-                </div>
+                <h2 id="profileModal-name"></h2>
+                <div class="details" id="profileModal-details"></div>
                 <div class="section">
                     <h3>Skills</h3>
-                    <div class="keywords" id="profileSkillsList">
-                        <span>Loading...</span>
-                    </div>
+                    <div class="keywords" id="profileSkillsList"></div>
                 </div>
                 <div class="section">
                     <h3>Interests</h3>
-                    <div class="keywords" id="profileInterestsList">
-                        <span>Loading...</span>
-                    </div>
+                    <div class="keywords" id="profileInterestsList"></div>
                 </div>
                 <div class="section">
                     <h3>Aspire to Be</h3>
-                    <div class="keywords" id="profileAspireList">
-                        <span>Loading...</span>
-                    </div>
+                    <div class="keywords" id="profileAspireList"></div>
                 </div>
             </div>
         </div>
 
         <!-- Main Content -->
         <div class="main-content">
-            <!-- Tabs (Moved to Top) -->
+            <!-- Tabs -->
             <div class="tabs" id="tabs">
                 <div class="active" onclick="switchTab('events')" tabindex="0" aria-label="Events Tab">Events</div>
                 <div onclick="switchTab('internships')" tabindex="0" aria-label="Internships Tab">Internships</div>
@@ -111,9 +83,7 @@
                 </div>
 
                 <!-- Event Grid -->
-                <div class="event-grid" id="eventGrid">
-                    <!-- Events will be dynamically inserted here via JavaScript -->
-                </div>
+                <div class="event-grid" id="eventGrid"></div>
             </div>
             <div id="internshipsTab" class="tab-content">
                 <p>Coming soon...</p>
@@ -142,7 +112,7 @@
                 window.location.href = '../index.html';
             } else {
                 loadUserProfile(localStorage.getItem('uid'));
-                fetchEventsFromAirtable();
+                fetchEventsFromAirtable(); // Load events immediately
             }
         });
     </script>
