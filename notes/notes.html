@@ -17,10 +17,7 @@
     <!-- Header -->
     <header class="header">
         <div class="logo">StudyNotes</div>
-        <div class="search-container">
-            <input type="text" class="search-bar" id="searchBar" placeholder="Search for notes...">
-            <button class="search-button" id="searchButton">Search</button>
-        </div>
+        <input type="text" class="search-bar" id="searchBar" placeholder="Search for notes...">
     </header>
     
     <!-- Main Content -->
@@ -42,17 +39,6 @@
         </div>
     </div>
     
-    <!-- Search Results Modal -->
-    <div class="modal" id="searchModal">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h2 class="modal-title">Search Results</h2>
-                <button class="close-button" id="closeSearchModal">×</button>
-            </div>
-            <div class="modal-body" id="searchModalBody"></div>
-        </div>
-    </div>
-    
     <script>
         // Airtable Configuration
         const AIRTABLE_PAT = 'pate5r7JSDV1BfXJR.cbe81f76c73b71ce8b399b2d71426cb7e0f89df7fefc4b8f9e2c97190381e191';
@@ -70,19 +56,13 @@
         const modalTitle = document.getElementById('modalTitle');
         const modalBody = document.getElementById('modalBody');
         const closeModal = document.getElementById('closeModal');
-        const searchBar = document.getElementById('searchBar');
-        const searchButton = document.getElementById('searchButton');
-        const searchModal = document.getElementById('searchModal');
-        const searchModalBody = document.getElementById('searchModalBody');
-        const closeSearchModal = document.getElementById('closeSearchModal');
 
-        // Data storage
+        // Current navigation state
         let currentDept = null;
         let currentSem = null;
         let currentSubject = null;
         let breadcrumbHistory = [];
         let departmentsData = {};
-        let allNotes = []; // Store all notes for search
 
         // Fetch Departments from Airtable
         async function fetchDepartments() {
@@ -96,13 +76,14 @@
                 departmentsData = data.records.reduce((acc, record) => {
                     acc[record.id] = {
                         id: record.id,
-                        name: record.fields.Name,
-                        description: record.fields.Description,
-                        icon: record.fields.Icon,
-                        color: record.fields.Color
+                        name: record.fields.Name || 'Unnamed Department',
+                        description: record.fields.Description || 'No description',
+                        icon: record.fields.Icon || '??',
+                        color: record.fields.Color || '#0071e3'
                     };
                     return acc;
                 }, {});
+                console.log('Fetched Departments:', departmentsData);
                 renderDepartments();
             } catch (error) {
                 console.error('Error fetching departments:', error);
@@ -113,18 +94,19 @@
         // Fetch Semesters for a Department
         async function fetchSemesters(deptId) {
             try {
+                console.log(`Fetching semesters for department ID: ${deptId}`);
                 const response = await fetch(
                     `https://api.airtable.com/v0/${AIRTABLE_BASE_ID}/${SEMESTERS_TABLE}?filterByFormula={Department}='${deptId}'`,
                     { headers: { Authorization: `Bearer ${AIRTABLE_PAT}` } }
                 );
-                if (!response.ok) throw new Error('Failed to fetch semesters');
+                if (!response.ok) throw new Error(`Failed to fetch semesters for dept ${deptId}`);
                 const data = await response.json();
-                return data.records.map(record => ({
+                const semesters = data.records.map(record => ({
                     id: record.id,
-                    semesterId: record.fields.SemesterID,
-                    name: record.fields.Name,
-                    deptId: record.fields.Department[0]
+                    name: record.fields.Name || 'Unnamed Semester'
                 }));
+                console.log(`Semesters for dept ${deptId}:`, semesters);
+                return semesters;
             } catch (error) {
                 console.error('Error fetching semesters:', error);
                 return [];
@@ -134,86 +116,45 @@
         // Fetch Subjects for a Semester
         async function fetchSubjects(semId) {
             try {
+                console.log(`Fetching subjects for semester ID: ${semId}`);
                 const response = await fetch(
                     `https://api.airtable.com/v0/${AIRTABLE_BASE_ID}/${SUBJECTS_TABLE}?filterByFormula={Semester}='${semId}'`,
                     { headers: { Authorization: `Bearer ${AIRTABLE_PAT}` } }
                 );
-                if (!response.ok) throw new Error('Failed to fetch subjects');
+                if (!response.ok) throw new Error(`Failed to fetch subjects for sem ${semId}`);
                 const data = await response.json();
-                return data.records.map(record => ({
+                const subjects = data.records.map(record => ({
                     id: record.id,
-                    subjectId: record.fields.SubjectID,
-                    name: record.fields.Name,
-                    credits: record.fields.Credits,
-                    semId: record.fields.Semester[0]
+                    name: record.fields.Name || 'Unnamed Subject',
+                    credits: record.fields.Credits || 0
                 }));
+                console.log(`Subjects for sem ${semId}:`, subjects);
+                return subjects;
             } catch (error) {
                 console.error('Error fetching subjects:', error);
                 return [];
             }
         }
 
-        // Fetch All Notes for Search (and regular display)
-        async function fetchAllNotes() {
-            try {
-                const response = await fetch(
-                    `https://api.airtable.com/v0/${AIRTABLE_BASE_ID}/${NOTES_TABLE}`,
-                    { headers: { Authorization: `Bearer ${AIRTABLE_PAT}` } }
-                );
-                if (!response.ok) throw new Error('Failed to fetch notes');
-                const data = await response.json();
-                allNotes = await Promise.all(data.records.map(async record => {
-                    const subjectId = record.fields.Subject[0];
-                    const subjectResp = await fetch(
-                        `https://api.airtable.com/v0/${AIRTABLE_BASE_ID}/${SUBJECTS_TABLE}/${subjectId}`,
-                        { headers: { Authorization: `Bearer ${AIRTABLE_PAT}` } }
-                    );
-                    const subjectData = await subjectResp.json();
-                    const semId = subjectData.fields.Semester[0];
-                    const semResp = await fetch(
-                        `https://api.airtable.com/v0/${AIRTABLE_BASE_ID}/${SEMESTERS_TABLE}/${semId}`,
-                        { headers: { Authorization: `Bearer ${AIRTABLE_PAT}` } }
-                    );
-                    const semData = await semResp.json();
-                    const deptId = semData.fields.Department[0];
-                    const dept = departmentsData[deptId];
-                    return {
-                        id: record.id,
-                        noteId: record.fields.NoteID,
-                        name: record.fields.Name,
-                        date: record.fields.Date,
-                        type: record.fields.Type,
-                        fileUrl: record.fields.File && record.fields.File[0] ? record.fields.File[0].url : null,
-                        subjectId: subjectId,
-                        subjectName: subjectData.fields.Name,
-                        semId: semId,
-                        semName: semData.fields.Name,
-                        deptId: deptId,
-                        deptName: dept ? dept.name : 'Unknown'
-                    };
-                }));
-            } catch (error) {
-                console.error('Error fetching all notes:', error);
-            }
-        }
-
-        // Fetch Notes for a Subject (for department navigation)
+        // Fetch Notes for a Subject
         async function fetchNotes(subjectId) {
             try {
+                console.log(`Fetching notes for subject ID: ${subjectId}`);
                 const response = await fetch(
                     `https://api.airtable.com/v0/${AIRTABLE_BASE_ID}/${NOTES_TABLE}?filterByFormula={Subject}='${subjectId}'`,
                     { headers: { Authorization: `Bearer ${AIRTABLE_PAT}` } }
                 );
-                if (!response.ok) throw new Error('Failed to fetch notes');
+                if (!response.ok) throw new Error(`Failed to fetch notes for subject ${subjectId}`);
                 const data = await response.json();
-                return data.records.map(record => ({
+                const notes = data.records.map(record => ({
                     id: record.id,
-                    noteId: record.fields.NoteID,
-                    name: record.fields.Name,
-                    date: record.fields.Date,
-                    type: record.fields.Type,
+                    name: record.fields.Name || 'Unnamed Note',
+                    date: record.fields.Date || 'Unknown Date',
+                    type: record.fields.Type || 'Unknown Type',
                     fileUrl: record.fields.File && record.fields.File[0] ? record.fields.File[0].url : null
                 }));
+                console.log(`Notes for subject ${subjectId}:`, notes);
+                return notes;
             } catch (error) {
                 console.error('Error fetching notes:', error);
                 return [];
@@ -234,6 +175,7 @@
                     </div>
                 `;
             });
+            // Add click handlers to new department cards
             document.querySelectorAll('.department-card').forEach(card => {
                 card.addEventListener('click', () => {
                     const deptId = card.getAttribute('data-dept');
@@ -250,13 +192,9 @@
             }, 500);
         });
 
-        // Close modal handlers
+        // Close modal handler
         closeModal.addEventListener('click', () => {
             departmentModal.style.display = 'none';
-        });
-
-        closeSearchModal.addEventListener('click', () => {
-            searchModal.style.display = 'none';
         });
 
         // Open department handler
@@ -285,12 +223,13 @@
                     `;
                 });
             } else {
-                content += `<p>No semesters available yet.</p>`;
+                content += `<p class="error-message">No semesters available yet for ${departmentsData[deptId].name}. Check Airtable data.</p>`;
             }
             
             content += `</div>`;
             modalBody.innerHTML = content;
             
+            // Add click event to semester items
             const semesterItems = modalBody.querySelectorAll('.semester-item');
             semesterItems.forEach(item => {
                 item.addEventListener('click', () => {
@@ -337,6 +276,7 @@
             content += `</div>`;
             modalBody.innerHTML = content;
             
+            // Add click event to subject items
             const subjectItems = modalBody.querySelectorAll('.subject-item');
             subjectItems.forEach(item => {
                 item.addEventListener('click', () => {
@@ -389,56 +329,6 @@
             modalBody.innerHTML = content;
         }
 
-        // Search handler
-        function searchNotes(query) {
-            if (!query.trim()) {
-                searchModalBody.innerHTML = `<p>Please enter a search term.</p>`;
-                searchModal.style.display = 'flex';
-                return;
-            }
-
-            const filteredNotes = allNotes.filter(note => 
-                note.name.toLowerCase().includes(query.toLowerCase()) ||
-                note.subjectName.toLowerCase().includes(query.toLowerCase()) ||
-                note.semName.toLowerCase().includes(query.toLowerCase()) ||
-                note.deptName.toLowerCase().includes(query.toLowerCase())
-            );
-
-            let content = `<div class="notes-list">`;
-            if (filteredNotes.length > 0) {
-                filteredNotes.forEach(note => {
-                    content += `
-                        <div class="notes-item">
-                            <div class="notes-name">${note.name} <span class="notes-badge">${note.type}</span></div>
-                            <div class="notes-date">Uploaded: ${note.date}</div>
-                            <p>${note.deptName} > ${note.semName} > ${note.subjectName}</p>
-                            ${
-                                note.fileUrl
-                                    ? `<button class="download-button" onclick="window.open('${note.fileUrl}', '_blank')">Download PDF</button>`
-                                    : `<p class="error-message">No PDF available</p>`
-                            }
-                        </div>
-                    `;
-                });
-            } else {
-                content += `<p>No notes found matching "${query}".</p>`;
-            }
-            content += `</div>`;
-            searchModalBody.innerHTML = content;
-            searchModal.style.display = 'flex';
-        }
-
-        // Event listeners
-        searchButton.addEventListener('click', () => {
-            searchNotes(searchBar.value);
-        });
-
-        searchBar.addEventListener('keypress', (e) => {
-            if (e.key === 'Enter') {
-                searchNotes(searchBar.value);
-            }
-        });
-
         // Event delegation for breadcrumb navigation
         document.addEventListener('click', (e) => {
             if (e.target.classList.contains('breadcrumb-item')) {
@@ -460,15 +350,12 @@
         window.addEventListener('click', (e) => {
             if (e.target === departmentModal) {
                 departmentModal.style.display = 'none';
-            } else if (e.target === searchModal) {
-                searchModal.style.display = 'none';
             }
         });
 
         // Initial load
-        document.addEventListener('DOMContentLoaded', async () => {
-            await fetchDepartments();
-            await fetchAllNotes(); // Fetch all notes for search
+        document.addEventListener('DOMContentLoaded', () => {
+            fetchDepartments();
         });
     </script>
 </body>
