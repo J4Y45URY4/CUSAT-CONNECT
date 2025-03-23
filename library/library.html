@@ -586,9 +586,13 @@
         };
 
         // Initialize Firebase
-        firebase.initializeApp(firebaseConfig);
+       // Initialize Firebase
+       firebase.initializeApp(firebaseConfig);
         const auth = firebase.auth();
         const db = firebase.firestore();
+
+        // Global seatMap instance
+        let seatMap;
 
         // Function to get current user data from Firebase Auth and Firestore
         async function getCurrentUserData() {
@@ -623,7 +627,7 @@
                 this.selectedDuration = null;
                 this.loadCheckInData();
             }
-            // ... Rest of LibraryCheckIn methods unchanged ...
+
             async loadCheckInData() {
                 const doc = await db.collection('bookings').doc(this.currentUser.id).get();
                 if (doc.exists) {
@@ -640,20 +644,29 @@
                     }
                 }
             }
+
             async checkIn() {
+                console.log('checkIn called, isCheckedIn:', this.isCheckedIn);
                 if (!this.isCheckedIn) {
                     const seatError = document.getElementById('seatError');
                     const timeError = document.getElementById('timeError');
+                    console.log('Selected seat:', seatMap.selectedSeat);
+                    console.log('Selected duration:', this.selectedDuration);
+
                     if (!seatMap.selectedSeat) {
                         seatError.style.display = 'block';
+                        console.log('No seat selected');
                         return false;
                     }
                     seatError.style.display = 'none';
+
                     if (!this.selectedDuration) {
                         timeError.style.display = 'block';
+                        console.log('No duration selected');
                         return false;
                     }
                     timeError.style.display = 'none';
+
                     this.checkInTime = new Date();
                     this.checkOutTime = new Date(this.checkInTime);
                     this.checkOutTime.setHours(this.checkInTime.getHours() + parseInt(this.selectedDuration));
@@ -665,16 +678,20 @@
                     this.updateCheckInUI();
                     seatMap.renderSeats();
                     activeUsersList.fetchActiveUsers();
+                    console.log('Check-in successful');
                     return true;
                 }
+                console.log('Already checked in');
                 return false;
             }
+
             showSuccessMessage() {
                 const successMessage = document.getElementById('successMessage');
                 successMessage.textContent = `${this.currentUser.username} successfully checked in at Seat ${this.selectedSeat}!`;
                 successMessage.style.display = 'block';
                 setTimeout(() => successMessage.style.display = 'none', 5000);
             }
+
             async saveCheckInData() {
                 const checkInData = {
                     userId: this.currentUser.id,
@@ -686,6 +703,7 @@
                 };
                 await db.collection('bookings').doc(this.currentUser.id).set(checkInData);
             }
+
             async checkOut() {
                 if (this.isCheckedIn) {
                     this.isCheckedIn = false;
@@ -700,6 +718,7 @@
                     setTimeout(() => successMessage.style.display = 'none', 5000);
                 }
             }
+
             startCountdown() {
                 if (this.timeLeftInterval) clearInterval(this.timeLeftInterval);
                 this.timeLeftInterval = setInterval(() => {
@@ -713,6 +732,7 @@
                     this.updateCountdownUI(timeLeft);
                 }, 1000);
             }
+
             updateCheckInUI() {
                 document.getElementById('notCheckedInState').style.display = 'none';
                 document.getElementById('checkedInState').style.display = 'block';
@@ -724,6 +744,7 @@
                 const seatDisplay = document.getElementById('seatDisplay');
                 seatDisplay.innerHTML = `<p>Your seat: <strong>${this.selectedSeat}</strong></p>`;
             }
+
             updateCheckOutUI() {
                 document.getElementById('notCheckedInState').style.display = 'block';
                 document.getElementById('checkedInState').style.display = 'none';
@@ -734,6 +755,7 @@
                 this.selectedDuration = null;
                 seatMap.renderSeats();
             }
+
             updateCountdownUI(timeLeftMs) {
                 const countdownCircle = document.getElementById('countdownCircle');
                 const countdownText = document.getElementById('countdownText');
@@ -746,6 +768,7 @@
                 countdownCircle.style.setProperty('--percentage', percentage + '%');
                 countdownText.textContent = `${hours}h ${minutes}m ${seconds}s`;
             }
+
             formatTime(date) {
                 return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
             }
@@ -829,17 +852,21 @@
                         if (prevSelected) prevSelected.classList.remove('selected');
                         this.selectedSeat = e.target.dataset.seatNumber;
                         e.target.classList.add('selected');
+                        console.log('Seat selected:', this.selectedSeat);
                     }
                 });
             }
         }
+
+        // Global activeUsersList instance
+        let activeUsersList;
 
         class ActiveUsersList {
             constructor() {
                 this.users = [];
                 this.updateInterval = null;
             }
-            // ... Rest of ActiveUsersList methods unchanged ...
+            
             async init() {
                 await this.fetchActiveUsers();
                 this.updateInterval = setInterval(() => this.fetchActiveUsers(), 30000);
@@ -897,8 +924,8 @@
             }
 
             const libraryCheckIn = new LibraryCheckIn(currentUser);
-            const seatMap = new SeatMap();
-            const activeUsersList = new ActiveUsersList();
+            seatMap = new SeatMap(); // Assign to global variable
+            activeUsersList = new ActiveUsersList(); // Assign to global variable
 
             await seatMap.init();
             await activeUsersList.init();
@@ -913,14 +940,22 @@
                 });
             });
 
-            document.getElementById('checkInBtn').addEventListener('click', () => libraryCheckIn.checkIn());
-            document.getElementById('checkOutBtn').addEventListener('click', () => libraryCheckIn.checkOut());
+            document.getElementById('checkInBtn').addEventListener('click', () => {
+                console.log('Check In button clicked');
+                libraryCheckIn.checkIn();
+            });
+
+            document.getElementById('checkOutBtn').addEventListener('click', () => {
+                console.log('Check Out button clicked');
+                libraryCheckIn.checkOut();
+            });
 
             document.querySelectorAll('.checkout-option').forEach(option => {
                 option.addEventListener('click', () => {
                     document.querySelectorAll('.checkout-option').forEach(opt => opt.classList.remove('selected'));
                     option.classList.add('selected');
                     libraryCheckIn.selectedDuration = option.getAttribute('data-hours');
+                    console.log('Duration selected:', libraryCheckIn.selectedDuration);
                 });
             });
         }
