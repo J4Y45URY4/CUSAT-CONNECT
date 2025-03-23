@@ -458,6 +458,8 @@
             }
         }
     </style>
+     <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-app-compat.js"></script>
+     <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-auth-compat.js"></script>
 </head>
 <body>
     <div class="container">
@@ -569,437 +571,292 @@
     </div>
 
     <!-- Firebase Integration -->
-    <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-app-compat.js"></script>
+   
     <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-firestore-compat.js"></script>
     <script>
         // Firebase configuration
         const firebaseConfig = {
-  apiKey: "AIzaSyCY7QcrbnkQmMWfbmion01PAsu5_s5GUrM",
-  authDomain: "cusat-connect-50e90.firebaseapp.com",
-  databaseURL: "https://cusat-connect-50e90-default-rtdb.firebaseio.com",
-  projectId: "cusat-connect-50e90",
-  storageBucket: "cusat-connect-50e90.firebasestorage.app",
-  messagingSenderId: "255437667135",
-  appId: "1:255437667135:web:5c0c6216744679c101718a"
-};
+            apiKey: "AIzaSyCY7QcrbnkQmMWfbmion01PAsu5_s5GUrM",
+            authDomain: "cusat-connect-50e90.firebaseapp.com",
+            databaseURL: "https://cusat-connect-50e90-default-rtdb.firebaseio.com",
+            projectId: "cusat-connect-50e90",
+            storageBucket: "cusat-connect-50e90.firebasestorage.app",
+            messagingSenderId: "255437667135",
+            appId: "1:255437667135:web:5c0c6216744679c101718a"
+        };
 
         // Initialize Firebase
         firebase.initializeApp(firebaseConfig);
+        const auth = firebase.auth();
         const db = firebase.firestore();
 
-        // Mock current user data (replace with actual user data from your auth system)
-        const currentUser = {
-            id: "user123",
-            username: "John Doe",
-            profilePic: "https://via.placeholder.com/100"
-        };
+        // Function to get current user data from Firebase Auth and Firestore
+        async function getCurrentUserData() {
+            return new Promise((resolve) => {
+                auth.onAuthStateChanged(async (user) => {
+                    console.log('Auth state changed, user:', user);
+                    if (user) {
+                        const userDoc = await db.collection('users').doc(user.uid).get();
+                        const userData = userDoc.exists ? userDoc.data() : {};
+                        console.log('User data from Firestore:', userData);
+                        resolve({
+                            id: user.uid,
+                            username: userData.username || user.displayName || "Anonymous",
+                            profilePic: userData.profilePic || user.photoURL || "https://via.placeholder.com/100"
+                        });
+                    } else {
+                        console.log('No user logged in');
+                        resolve(null);
+                    }
+                });
+            });
+        }
 
-        // Library Check-in Class
         class LibraryCheckIn {
-            constructor() {
+            constructor(currentUser) {
+                this.currentUser = currentUser;
                 this.checkInTime = null;
                 this.checkOutTime = null;
                 this.isCheckedIn = false;
                 this.selectedSeat = null;
                 this.timeLeftInterval = null;
                 this.selectedDuration = null;
-                
-                // Load existing check-in data if it exists
                 this.loadCheckInData();
             }
-            
-            // Load check-in data if the user is already checked in
-            loadCheckInData() {
-                const savedData = localStorage.getItem('libraryCheckIn_' + currentUser.id);
-                if (savedData) {
-                    const data = JSON.parse(savedData);
+            // ... Rest of LibraryCheckIn methods unchanged ...
+            async loadCheckInData() {
+                const doc = await db.collection('bookings').doc(this.currentUser.id).get();
+                if (doc.exists) {
+                    const data = doc.data();
                     this.checkInTime = new Date(data.checkInTime);
                     this.checkOutTime = new Date(data.checkOutTime);
                     this.selectedSeat = data.seatNumber;
                     this.isCheckedIn = true;
-                    
-                    // Check if the check-out time is in the future
                     if (this.checkOutTime > new Date()) {
                         this.startCountdown();
                         this.updateCheckInUI();
                     } else {
-                        // Auto check-out if time has passed
                         this.checkOut();
                     }
                 }
             }
-
-            // Check in user to library
-            checkIn() {
+            async checkIn() {
                 if (!this.isCheckedIn) {
                     const seatError = document.getElementById('seatError');
                     const timeError = document.getElementById('timeError');
-                    
-                    // Validate seat selection
                     if (!seatMap.selectedSeat) {
                         seatError.style.display = 'block';
                         return false;
                     }
                     seatError.style.display = 'none';
-                    
-                    // Validate checkout time
                     if (!this.selectedDuration) {
                         timeError.style.display = 'block';
                         return false;
                     }
                     timeError.style.display = 'none';
-                    
                     this.checkInTime = new Date();
-                    
-                    // Calculate check-out time based on selected duration
                     this.checkOutTime = new Date(this.checkInTime);
-                    this.checkOutTime.setHours(this.checkOutTime.getHours() + parseInt(this.selectedDuration));
-                    
+                    this.checkOutTime.setHours(this.checkInTime.getHours() + parseInt(this.selectedDuration));
                     this.isCheckedIn = true;
                     this.selectedSeat = seatMap.selectedSeat;
-                    
-                    // Show success message
+                    await this.saveCheckInData();
                     this.showSuccessMessage();
-                    
-                    // Save data
-                    this.saveCheckInData();
-                    
-                    // Start countdown timer
                     this.startCountdown();
-                    
-                    // Update UI
                     this.updateCheckInUI();
-                    
+                    seatMap.renderSeats();
+                    activeUsersList.fetchActiveUsers();
                     return true;
                 }
                 return false;
             }
-
-            // Show success check-in message
             showSuccessMessage() {
                 const successMessage = document.getElementById('successMessage');
-                successMessage.textContent = `${currentUser.username} successfully checked in!`;
+                successMessage.textContent = `${this.currentUser.username} successfully checked in at Seat ${this.selectedSeat}!`;
                 successMessage.style.display = 'block';
-                
-                // Hide message after 5 seconds
-                setTimeout(() => {
-                    successMessage.style.display = 'none';
-                }, 5000);
+                setTimeout(() => successMessage.style.display = 'none', 5000);
             }
-
-            // Check out user from library
-            checkOut() {
+            async saveCheckInData() {
+                const checkInData = {
+                    userId: this.currentUser.id,
+                    username: this.currentUser.username,
+                    profilePic: this.currentUser.profilePic,
+                    checkInTime: this.checkInTime.toISOString(),
+                    checkOutTime: this.checkOutTime.toISOString(),
+                    seatNumber: this.selectedSeat
+                };
+                await db.collection('bookings').doc(this.currentUser.id).set(checkInData);
+            }
+            async checkOut() {
                 if (this.isCheckedIn) {
                     this.isCheckedIn = false;
                     clearInterval(this.timeLeftInterval);
-                    
-                    // Send to server
-                    this.deleteCheckInData();
-                    
-                    // Update UI
+                    await db.collection('bookings').doc(this.currentUser.id).delete();
                     this.updateCheckOutUI();
-                    
-                    // Show success message
+                    seatMap.renderSeats();
+                    activeUsersList.fetchActiveUsers();
                     const successMessage = document.getElementById('successMessage');
-                    successMessage.textContent = `${currentUser.username} successfully checked out!`;
+                    successMessage.textContent = `${this.currentUser.username} successfully checked out!`;
                     successMessage.style.display = 'block';
-                    
-                    // Hide message after 5 seconds
-                    setTimeout(() => {
-                        successMessage.style.display = 'none';
-                    }, 5000);
+                    setTimeout(() => successMessage.style.display = 'none', 5000);
                 }
             }
-
-            // Start countdown timer
             startCountdown() {
-                if (this.timeLeftInterval) {
-                    clearInterval(this.timeLeftInterval);
-                }
-                
+                if (this.timeLeftInterval) clearInterval(this.timeLeftInterval);
                 this.timeLeftInterval = setInterval(() => {
                     const now = new Date();
                     const timeLeft = this.checkOutTime - now;
-                    
                     if (timeLeft <= 0) {
-                        // Time's up
                         clearInterval(this.timeLeftInterval);
                         this.checkOut();
                         return;
                     }
-                    
-                    // Update countdown circle UI
                     this.updateCountdownUI(timeLeft);
                 }, 1000);
             }
-
-            
-saveCheckInData() {
-    const checkInData = {
-        userId: currentUser.id,
-        username: currentUser.username,
-        profilePic: currentUser.profilePic,
-        checkInTime: this.checkInTime,
-        checkOutTime: this.checkOutTime,
-        seatNumber: this.selectedSeat
-    };
-    
-    // Save to Firestore
-    db.collection('bookings').add(checkInData)
-        .then(() => {
-            // Update occupied seats
-            this.updateOccupiedSeats();
-            
-            // Refresh active users list
-            activeUsersList.fetchActiveUsers();
-        })
-        .catch((error) => {
-            console.error("Error saving check-in data: ", error);
-        });
-
-        // You should add this:
-localStorage.setItem('libraryCheckIn_' + currentUser.id, JSON.stringify({
-    checkInTime: this.checkInTime,
-    checkOutTime: this.checkOutTime,
-    seatNumber: this.selectedSeat
-}));
-}
-
-            // Delete check-in data from server
-            deleteCheckInData() {
-                db.collection('bookings').where('userId', '==', currentUser.id).get()
-                    .then((querySnapshot) => {
-                        querySnapshot.forEach((doc) => {
-                            doc.ref.delete();
-                        });
-                        
-                        // Update occupied seats
-                        this.updateOccupiedSeats();
-                        
-                        // Refresh active users list
-                        activeUsersList.fetchActiveUsers();
-                    })
-                    .catch((error) => {
-                        console.error("Error deleting check-in data: ", error);
-                    });
-            }
-
-            // Update occupied seats
-            updateOccupiedSeats() {
-                db.collection('bookings').get()
-                    .then((querySnapshot) => {
-                        const occupiedSeats = [];
-                        querySnapshot.forEach((doc) => {
-                            occupiedSeats.push(doc.data().seatNumber);
-                        });
-                        
-                        // Save to localStorage
-                        localStorage.setItem('libraryOccupiedSeats', JSON.stringify(occupiedSeats));
-                        
-                        // Refresh seat map
-                        seatMap.renderSeats();
-                    })
-                    .catch((error) => {
-                        console.error("Error fetching occupied seats: ", error);
-                    });
-            }
-
-            // Update UI after check-in
             updateCheckInUI() {
                 document.getElementById('notCheckedInState').style.display = 'none';
                 document.getElementById('checkedInState').style.display = 'block';
-                
                 const timeDisplay = document.getElementById('timeDisplay');
                 timeDisplay.innerHTML = `
                     <p>Checked in at: ${this.formatTime(this.checkInTime)}</p>
                     <p>Check out by: ${this.formatTime(this.checkOutTime)}</p>
                 `;
-                
                 const seatDisplay = document.getElementById('seatDisplay');
                 seatDisplay.innerHTML = `<p>Your seat: <strong>${this.selectedSeat}</strong></p>`;
             }
-
-            // Update UI after check-out
             updateCheckOutUI() {
                 document.getElementById('notCheckedInState').style.display = 'block';
                 document.getElementById('checkedInState').style.display = 'none';
-                
-                // Reset checkout option selection
                 document.querySelectorAll('.checkout-option').forEach(option => {
                     option.classList.remove('selected');
                 });
-                
-                // Reset seat selection
                 seatMap.selectedSeat = null;
                 this.selectedDuration = null;
                 seatMap.renderSeats();
             }
-
-            // Update countdown circle UI
             updateCountdownUI(timeLeftMs) {
                 const countdownCircle = document.getElementById('countdownCircle');
                 const countdownText = document.getElementById('countdownText');
-                
-                // Calculate time in hours, minutes, seconds
                 const hours = Math.floor(timeLeftMs / (1000 * 60 * 60));
                 const minutes = Math.floor((timeLeftMs % (1000 * 60 * 60)) / (1000 * 60));
                 const seconds = Math.floor((timeLeftMs % (1000 * 60)) / 1000);
-                
-                // Calculate total duration in seconds (from check-in to check-out)
                 const totalDurationSeconds = (this.checkOutTime - this.checkInTime) / 1000;
                 const remainingSeconds = timeLeftMs / 1000;
-                
-                // Calculate percentage for circle
                 const percentage = (remainingSeconds / totalDurationSeconds) * 100;
-                
-                // Update circle progress (using CSS variable for the percentage)
                 countdownCircle.style.setProperty('--percentage', percentage + '%');
-                
-                // Update countdown text
                 countdownText.textContent = `${hours}h ${minutes}m ${seconds}s`;
             }
-
-            // Format time for display
             formatTime(date) {
                 return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
             }
         }
 
         class SeatMap {
-    constructor() {
-        this.totalSeats = 40; // 20 seats in the first row, 20 in the second row
-        this.seatsPerRow = 20; // Each row has 20 seats
-        this.selectedSeat = null;
-        this.occupiedSeats = [];
-    }
-    
-    // Initialize seat map
-    init() {
-        this.loadOccupiedSeats();
-        this.renderSeats();
-        this.addEventListeners();
-    }
-    
-    // Load occupied seats from localStorage
-    loadOccupiedSeats() {
-        this.occupiedSeats = JSON.parse(localStorage.getItem('libraryOccupiedSeats') || '[]');
-    }
-    
-    // Render seat map
-    renderSeats() {
-        // Load latest occupied seats
-        this.loadOccupiedSeats();
-        
-        // Clear existing seats
-        document.getElementById('row1').innerHTML = '';
-        document.getElementById('row2').innerHTML = '';
-        
-        // Create seats for row 1 (20 seats)
-        this.renderSeatRow('row1', 1, 20);
-        
-        // Create seats for row 2 (20 seats)
-        this.renderSeatRow('row2', 21, 40);
-    }
-    
-    // Render a row of seats
-    renderSeatRow(rowId, startSeat, endSeat) {
-        const row = document.getElementById(rowId);
-        
-        // Calculate number of groups of 5 seats
-        const numGroups = Math.ceil((endSeat - startSeat + 1) / 5);
-        
-        for (let group = 0; group < numGroups; group++) {
-            const seatGroup = document.createElement('div');
-            seatGroup.className = 'seat-group';
-            
-            // For each group, create 5 seats (or fewer for the last group)
-            const groupStartSeat = startSeat + (group * 10);
-            const groupEndSeat = Math.min(groupStartSeat + 9, endSeat);
-            
-            for (let seatNum = groupStartSeat; seatNum <= groupEndSeat; seatNum++) {
-                const seat = document.createElement('div');
-                seat.className = 'seat';
-                seat.dataset.seatNumber = seatNum;
-                seat.textContent = seatNum;
-                
-                // Check if seat is occupied
-                if (this.occupiedSeats.includes(seatNum.toString())) {
-                    seat.classList.add('occupied');
-                }
-                
-                // Check if seat is selected
-                if (seatNum.toString() === this.selectedSeat) {
-                    seat.classList.add('selected');
-                }
-                
-                seatGroup.appendChild(seat);
+            constructor() {
+                this.totalSeats = 40;
+                this.seatsPerRow = 20;
+                this.selectedSeat = null;
+                this.occupiedSeats = [];
             }
             
-            row.appendChild(seatGroup);
+            async init() {
+                console.log('Initializing SeatMap');
+                await this.loadOccupiedSeats();
+                this.renderSeats();
+                this.addEventListeners();
+            }
+            
+            async loadOccupiedSeats() {
+                try {
+                    const snapshot = await db.collection('bookings').get();
+                    this.occupiedSeats = snapshot.docs.map(doc => doc.data().seatNumber);
+                    console.log('Occupied seats:', this.occupiedSeats);
+                } catch (error) {
+                    console.error('Error loading occupied seats:', error);
+                    this.occupiedSeats = [];
+                }
+            }
+            
+            async renderSeats() {
+                console.log('Rendering seats');
+                try {
+                    await this.loadOccupiedSeats();
+                    const row1 = document.getElementById('row1');
+                    const row2 = document.getElementById('row2');
+                    if (!row1 || !row2) {
+                        console.error('Seat rows not found in DOM');
+                        return;
+                    }
+                    row1.innerHTML = '';
+                    row2.innerHTML = '';
+                    this.renderSeatRow('row1', 1, 20);
+                    this.renderSeatRow('row2', 21, 40);
+                    console.log('Seats rendered successfully');
+                } catch (error) {
+                    console.error('Error rendering seats:', error);
+                }
+            }
+            
+            renderSeatRow(rowId, startSeat, endSeat) {
+                const row = document.getElementById(rowId);
+                const numGroups = Math.ceil((endSeat - startSeat + 1) / 5);
+                for (let group = 0; group < numGroups; group++) {
+                    const seatGroup = document.createElement('div');
+                    seatGroup.className = 'seat-group';
+                    const groupStartSeat = startSeat + (group * 10);
+                    const groupEndSeat = Math.min(groupStartSeat + 9, endSeat);
+                    for (let seatNum = groupStartSeat; seatNum <= groupEndSeat; seatNum++) {
+                        const seat = document.createElement('div');
+                        seat.className = 'seat';
+                        seat.dataset.seatNumber = seatNum;
+                        seat.textContent = seatNum;
+                        if (this.occupiedSeats.includes(seatNum.toString())) {
+                            seat.classList.add('occupied');
+                        }
+                        if (seatNum.toString() === this.selectedSeat) {
+                            seat.classList.add('selected');
+                        }
+                        seatGroup.appendChild(seat);
+                    }
+                    row.appendChild(seatGroup);
+                }
+            }
+            
+            addEventListeners() {
+                document.addEventListener('click', (e) => {
+                    if (e.target.classList.contains('seat') && !e.target.classList.contains('occupied')) {
+                        const prevSelected = document.querySelector('.seat.selected');
+                        if (prevSelected) prevSelected.classList.remove('selected');
+                        this.selectedSeat = e.target.dataset.seatNumber;
+                        e.target.classList.add('selected');
+                    }
+                });
+            }
         }
-    }
-    
-    // Add event listeners to seats
-    addEventListeners() {
-        // Use event delegation
-        document.addEventListener('click', (e) => {
-            if (e.target.classList.contains('seat') && !e.target.classList.contains('occupied')) {
-                // Deselect previously selected seat
-                const prevSelected = document.querySelector(`.seat.selected`);
-                if (prevSelected) {
-                    prevSelected.classList.remove('selected');
-                }
-                
-                // Select new seat
-                this.selectedSeat = e.target.dataset.seatNumber;
-                e.target.classList.add('selected');
-            }
-        });
-    }
-}
 
-        // Active Users List Component
         class ActiveUsersList {
             constructor() {
                 this.users = [];
                 this.updateInterval = null;
             }
-
-            // Start fetching active users
-            init() {
-                this.fetchActiveUsers();
-                
-                // Update every 30 seconds
-                this.updateInterval = setInterval(() => {
-                    this.fetchActiveUsers();
-                }, 30000);
+            // ... Rest of ActiveUsersList methods unchanged ...
+            async init() {
+                await this.fetchActiveUsers();
+                this.updateInterval = setInterval(() => this.fetchActiveUsers(), 30000);
             }
 
-            // Fetch active users from server
-            fetchActiveUsers() {
-                db.collection('bookings').get()
-                    .then((querySnapshot) => {
-                        this.users = [];
-                        querySnapshot.forEach((doc) => {
-                            const userData = doc.data();
-                            if (new Date(userData.checkOutTime) > new Date()) {
-                                this.users.push(userData);
-                            }
-                        });
-                        
-                        // Render users list
-                        this.renderUsersList();
-                    })
-                    .catch((error) => {
-                        console.error("Error fetching active users: ", error);
-                    });
+            async fetchActiveUsers() {
+                const now = new Date();
+                const snapshot = await db.collection('bookings').get();
+                this.users = snapshot.docs
+                    .map(doc => doc.data())
+                    .filter(user => new Date(user.checkOutTime) > now);
+                this.renderUsersList();
             }
 
-            // Render users list to UI
             renderUsersList() {
                 const usersContainer = document.getElementById('activeUsersList');
                 usersContainer.innerHTML = '';
-                
                 if (this.users.length === 0) {
                     usersContainer.innerHTML = `
                         <div class="empty-state">
@@ -1009,108 +866,68 @@ localStorage.setItem('libraryCheckIn_' + currentUser.id, JSON.stringify({
                     `;
                     return;
                 }
-                
                 this.users.forEach(user => {
-                    const userCard = document.createElement('div');
-                    userCard.className = 'user-card';
-                    
                     const timeLeft = new Date(user.checkOutTime) - new Date();
                     const hoursLeft = Math.floor(timeLeft / (1000 * 60 * 60));
                     const minutesLeft = Math.floor((timeLeft % (1000 * 60 * 60)) / (1000 * 60));
                     const secondsLeft = Math.floor((timeLeft % (1000 * 60)) / 1000);
-                    
+                    const userCard = document.createElement('div');
+                    userCard.className = 'user-card';
                     userCard.innerHTML = `
                         <img src="${user.profilePic}" alt="${user.username}" class="user-avatar">
                         <div class="user-info">
                             <h3>${user.username}</h3>
                             <p>Seat: ${user.seatNumber}</p>
-                            <p>Check out by: ${this.formatTime(new Date(user.checkOutTime))}</p>
-                        </div>
-                        <div class="mini-countdown" style="background-color: ${this.getCountdownColor(timeLeft)};">
-                            <div class="mini-countdown-inner">
-                                ${hoursLeft}h ${minutesLeft}m
-                            </div>
+                            <p>Time remaining: ${hoursLeft}h ${minutesLeft}m ${secondsLeft}s</p>
                         </div>
                     `;
-                    
                     usersContainer.appendChild(userCard);
                 });
             }
-
-            // Format time for display
-            formatTime(date) {
-                return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-            }
-
-            // Get countdown color based on time left
-            getCountdownColor(timeLeft) {
-                const hoursLeft = timeLeft / (1000 * 60 * 60);
-                
-                if (hoursLeft > 4) {
-                    return '#2ecc71'; // Green
-                } else if (hoursLeft > 2) {
-                    return '#f1c40f'; // Yellow
-                } else {
-                    return '#e74c3c'; // Red
-                }
-            }
         }
 
-        // Initialize components
-        const libraryCheckIn = new LibraryCheckIn();
-        const seatMap = new SeatMap();
-        const activeUsersList = new ActiveUsersList();
+        async function initialize() {
+            const currentUser = await getCurrentUserData();
+            console.log('Current user:', currentUser);
+            if (!currentUser) {
+                console.error('No authenticated user found. Please log in.');
+                // Optionally redirect to login page
+                // window.location.href = '/login.html';
+                return;
+            }
 
-        // Initialize seat map and active users list
-        seatMap.init();
-        activeUsersList.init();
+            const libraryCheckIn = new LibraryCheckIn(currentUser);
+            const seatMap = new SeatMap();
+            const activeUsersList = new ActiveUsersList();
 
-        // Event listeners for navigation
-        document.querySelectorAll('.nav-item').forEach(item => {
-            item.addEventListener('click', () => {
-                // Remove active class from all items
-                document.querySelectorAll('.nav-item').forEach(navItem => {
-                    navItem.classList.remove('active');
+            await seatMap.init();
+            await activeUsersList.init();
+
+            document.querySelectorAll('.nav-item').forEach(item => {
+                item.addEventListener('click', () => {
+                    document.querySelectorAll('.nav-item').forEach(navItem => navItem.classList.remove('active'));
+                    item.classList.add('active');
+                    document.querySelectorAll('.content-section').forEach(section => section.style.display = 'none');
+                    const sectionId = item.getAttribute('data-section');
+                    document.getElementById(sectionId).style.display = 'block';
                 });
-                
-                // Add active class to clicked item
-                item.classList.add('active');
-                
-                // Hide all content sections
-                document.querySelectorAll('.content-section').forEach(section => {
-                    section.style.display = 'none';
-                });
-                
-                // Show the selected content section
-                const sectionId = item.getAttribute('data-section');
-                document.getElementById(sectionId).style.display = 'block';
             });
-        });
 
-        // Event listener for check-in button
-        document.getElementById('checkInBtn').addEventListener('click', () => {
-            libraryCheckIn.checkIn();
-        });
+            document.getElementById('checkInBtn').addEventListener('click', () => libraryCheckIn.checkIn());
+            document.getElementById('checkOutBtn').addEventListener('click', () => libraryCheckIn.checkOut());
 
-        // Event listener for check-out button
-        document.getElementById('checkOutBtn').addEventListener('click', () => {
-            libraryCheckIn.checkOut();
-        });
-
-        // Event listeners for checkout time options
-        document.querySelectorAll('.checkout-option').forEach(option => {
-            option.addEventListener('click', () => {
-                // Remove selected class from all options
-                document.querySelectorAll('.checkout-option').forEach(opt => {
-                    opt.classList.remove('selected');
+            document.querySelectorAll('.checkout-option').forEach(option => {
+                option.addEventListener('click', () => {
+                    document.querySelectorAll('.checkout-option').forEach(opt => opt.classList.remove('selected'));
+                    option.classList.add('selected');
+                    libraryCheckIn.selectedDuration = option.getAttribute('data-hours');
                 });
-                
-                // Add selected class to clicked option
-                option.classList.add('selected');
-                
-                // Set selected duration
-                libraryCheckIn.selectedDuration = option.getAttribute('data-hours');
             });
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            console.log('DOM loaded, starting initialization');
+            initialize();
         });
     </script>
 </body>
